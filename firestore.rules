@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function manager() { return signedIn() && (request.auth.token.role == 'owner' || request.auth.token.role == 'staff'); }
+    function own(uid) { return signedIn() && request.auth.uid == uid; }
+    function managementFieldsOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'status', 'ownerResponse', 'declineReason', 'approvedAt', 'approvedBy',
+        'declinedAt', 'declinedBy', 'statusUpdatedAt', 'statusUpdatedBy',
+        'cancelledAt', 'cancelledBy', 'updatedAt'
+      ]);
+    }
+
+    match /users/{uid} {
+      allow read: if own(uid) || manager();
+      allow create: if own(uid) && request.resource.data.role == 'customer';
+      allow update: if own(uid) && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+      match /devices/{deviceId} {
+        allow read, create, update, delete: if own(uid);
+      }
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || manager());
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'new'
+        && request.resource.data.ownerResponse == ''
+        && request.resource.data.declineReason == '';
+      allow update: if manager()
+        && managementFieldsOnly()
+        && request.resource.data.status in ['new', 'reviewing', 'approved', 'declined', 'completed', 'cancelled'];
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && resource.data.status in ['new', 'reviewing']
+        && request.resource.data.status == 'cancelled'
+        && request.resource.data.cancelledBy == request.auth.uid
+        && managementFieldsOnly();
+      allow delete: if false;
+    }
+
+    match /settings/support {
+      allow read: if signedIn();
+      allow write: if manager();
+    }
+
+    match /notification_events/{eventId} { allow read, write: if false; }
+    match /mail/{mailId} { allow read, write: if false; }
+  }
+}
