@@ -1,8 +1,7 @@
 import 'blocs.dart';
 
-  class BlocProviders {
-    static final List<BlocProvider> providers = [
-
+class BlocProviders {
+  static final List<BlocProvider> providers = [
     BlocProvider<LocaleCubit>(create: (_) => LocaleCubit()..getSavedLanguage()),
 
     BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()),
@@ -13,17 +12,15 @@ import 'blocs.dart';
 
     BlocProvider<RegisterCubit>(create: (_) => RegisterCubit()),
 
-    BlocProvider<AppCubit>(create: (_) => AppCubit()..getExplore()..createDatabase()),
+    BlocProvider<AppCubit>(create: (_) => AppCubit()..createDatabase()),
 
     BlocProvider<ProfileCubit>(create: (_) => ProfileCubit()),
 
     BlocProvider<EditProfileCubit>(create: (_) => EditProfileCubit()),
-
 
     // .
     // .
     // .
     // other blocs or cubits...
   ];
-
 }

@@ -5,6 +5,7 @@ import 'package:booking_app/resources/assets_manager/assets_manager.dart';
 import 'package:booking_app/resources/constants/constants.dart';
 import 'package:booking_app/resources/themes/theme.dart';
 import 'package:lottie/lottie.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -24,7 +25,8 @@ class _SplashScreenState extends State<SplashScreen> {
         if (lang == '')
           Navigator.pushNamedAndRemoveUntil(
               context, '/lang', (Route<dynamic> route) => false);
-        else if (BasicModel.isLogin)
+        else if (FirebaseAuth.instance.currentUser != null ||
+            BasicModel.isLogin)
           Navigator.pushNamedAndRemoveUntil(
               context, '/main', (Route<dynamic> route) => false);
         else
@@ -32,7 +34,6 @@ class _SplashScreenState extends State<SplashScreen> {
               context, '/getStarted', (Route<dynamic> route) => false);
       }
     });
-
   }
 
   getStarted() async {

@@ -26,8 +26,7 @@ const double height4 = 115;
 const double height5 = 130;
 const double height6 = 160;
 
-const double round = 15;
+const double round = 8;
 
 // ----------------------------------- Enum -----------------------------------
 enum NavbarItem { home, settings, profile }
-

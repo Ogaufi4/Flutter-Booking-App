@@ -57,7 +57,7 @@ class RegisterScreen extends StatelessWidget {
                       Text(
                         'sign_up_txt'.tr(context),
                         style: OwnTheme.hugeBoldTextStyle(lang: lang)
-                            .colorChange(color: 'white'),
+                            .colorChange(color: 'secondary'),
                       ),
                       SizedBox(
                         height: space2,
@@ -71,8 +71,7 @@ class RegisterScreen extends StatelessWidget {
                         height: space0,
                       ),
                       TextFormField(
-                        style: OwnTheme.normalBoldTextStyle(lang: lang)
-                            .colorChange(color: 'white'),
+                        style: const TextStyle(color: Color(0xFF262833), fontWeight: FontWeight.w500),
                         controller: firstNameController,
                         keyboardType: TextInputType.name,
                         onFieldSubmitted: (String value) {},
@@ -114,8 +113,7 @@ class RegisterScreen extends StatelessWidget {
                         height: space0,
                       ),
                       TextFormField(
-                        style: OwnTheme.normalBoldTextStyle(lang: lang)
-                            .colorChange(color: 'white'),
+                        style: const TextStyle(color: Color(0xFF262833), fontWeight: FontWeight.w500),
                         controller: lastNameController,
                         keyboardType: TextInputType.text,
                         onFieldSubmitted: (String value) {},
@@ -157,8 +155,7 @@ class RegisterScreen extends StatelessWidget {
                         height: space0,
                       ),
                       TextFormField(
-                        style: OwnTheme.normalBoldTextStyle(lang: lang)
-                            .colorChange(color: 'white'),
+                        style: const TextStyle(color: Color(0xFF262833), fontWeight: FontWeight.w500),
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
                         onFieldSubmitted: (String value) {},
@@ -206,8 +203,7 @@ class RegisterScreen extends StatelessWidget {
                       ),
                       TextFormField(
                         textAlignVertical: TextAlignVertical.center,
-                        style: OwnTheme.normalBoldTextStyle(lang: lang)
-                            .colorChange(color: 'white'),
+                        style: const TextStyle(color: Color(0xFF262833), fontWeight: FontWeight.w500),
                         controller: passwordController,
                         keyboardType: TextInputType.visiblePassword,
                         obscureText: RegisterCubit.get(context).isPassword,
@@ -277,7 +273,7 @@ class RegisterScreen extends StatelessWidget {
                           }
                         },
                         buttonText: 'Button_Register'.tr(context),
-                        textColor: OwnTheme.colorPalette['white'],
+                        textColor: OwnTheme.colorPalette['secondary'],
                         isLoading: (state is RegisterLoadingState),
                       ),
                       SizedBox(

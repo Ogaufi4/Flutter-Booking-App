@@ -1,4 +1,4 @@
-{
+﻿{
   "BottomNavigation----------------------------": "BottomNavigation-------------------",
   "explore_txt": "Explore",
   "trips_txt": "Trips",
@@ -18,7 +18,7 @@
   "setting_txt": "Setting",
   "logout_txt": "Logout",
   "GetStarted----------------------------": "GetStarted-------------------------",
-  "booking_app_txt": "Booking App",
+  "booking_app_txt": "Travel365 App",
   "booking_app_desc1": "Best hotel deals for your",
   "booking_app_desc2": "holiday",
   "get_started_btn": "Get Started",

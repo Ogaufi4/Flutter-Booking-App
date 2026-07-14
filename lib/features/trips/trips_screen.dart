@@ -1,854 +1,171 @@
-import 'package:booking_app/core/localization/setup/app_localization.dart';
-import 'package:booking_app/core/main_blocs/blocs.dart';
-import 'package:booking_app/data/models/booking_model.dart';
-import 'package:booking_app/features/home/cubit/app_cubit.dart';
-import 'package:booking_app/features/home/cubit/app_states.dart';
-import 'package:booking_app/resources/constants/constants.dart';
+import 'package:booking_app/features/bookings/booking_presenter.dart';
+import 'package:booking_app/features/bookings/data/booking_repository.dart';
+import 'package:booking_app/features/bookings/data/travel_booking.dart';
+import 'package:booking_app/features/bookings/pages/book_trip_screen.dart';
+import 'package:booking_app/features/bookings/pages/booking_details_screen.dart';
 import 'package:booking_app/resources/themes/theme.dart';
-import 'package:sizer/sizer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class TripsScreen extends StatefulWidget {
-  const TripsScreen({Key? key}) : super(key: key);
-
+class TripsScreen extends StatelessWidget {
+  TripsScreen({Key? key}) : super(key: key);
+  final BookingRepository repository = BookingRepository();
   @override
-  State<TripsScreen> createState() => _TripsScreenState();
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+            title: Text('My Bookings',
+                style: TextStyle(
+                    color: OwnTheme.colorPalette['secondary'],
+                    fontWeight: FontWeight.w700)),
+            actions: [
+              TextButton.icon(
+                  onPressed: () => _book(context),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Book')),
+              const SizedBox(width: 8)
+            ]),
+        body: StreamBuilder<List<TravelBooking>>(
+          stream: repository.watchMyBookings(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) return _Error(error: snapshot.error);
+            if (!snapshot.hasData)
+              return const Center(child: CircularProgressIndicator());
+            final bookings = snapshot.data!;
+            if (bookings.isEmpty) return _Empty(onBook: () => _book(context));
+            return ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                itemCount: bookings.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, i) => _BookingCard(booking: bookings[i]));
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+            onPressed: () => _book(context),
+            backgroundColor: OwnTheme.colorPalette['primary'],
+            foregroundColor: Colors.white,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.add_rounded)),
+      );
+  Future<void> _book(BuildContext context) => Navigator.push(
+      context, MaterialPageRoute(builder: (_) => const BookTripScreen()));
 }
 
-class _TripsScreenState extends State<TripsScreen> {
+class _BookingCard extends StatelessWidget {
+  const _BookingCard({required this.booking});
+  final TravelBooking booking;
   @override
   Widget build(BuildContext context) {
-    Size size=MediaQuery.of(context).size;
-    return BlocConsumer<AppCubit,AppStates>(
-        listener: (context,state){
-
-        },
-      builder: (context,state){
-          var cubit=AppCubit.get(context);
-          return Scaffold(
-            backgroundColor:  OwnTheme.colorPalette['black'],
-            appBar: AppBar(
-              backgroundColor:  OwnTheme.colorPalette['black'],
-              title:  Text(
-                'my_trip'.tr(context),
-                style: TextStyle(
-                    fontSize: 16.sp,
-                    color:  OwnTheme.colorPalette['white'],
-                    fontWeight: FontWeight.w500,
-                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                ),
-              ),
-
-            ),
-            body: SingleChildScrollView(
-              child: Container(
+    final color = bookingStatusColor(booking.normalizedStatus);
+    return Card(
+        child: InkWell(
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => BookingDetailsScreen(
+                        bookingId: booking.id, ownerMode: false))),
+            child: Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 15
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 10
-                      ),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: const Color(0xff282828),
-                          border: Border.all(
-                              color: const Color(0xff282828)
-                          )
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          GestureDetector(
-                            onTap: (){
-                              cubit.toolbarSwitch(0);
-                              cubit.toolbarColorSwitch(0);
-                            },
-                            child: Text(
-                              'up_coming'.tr(context),
-                              style: TextStyle(
-                                  fontSize: 11.sp,
-                                  color: cubit.count!=0? OwnTheme.colorPalette['white']:OwnTheme.colorPalette['primary'],
-                                  fontWeight: FontWeight.w300,
-                                  fontFamily: lang == "ar" ? "fontAr" : "fontEn"
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                              cubit.toolbarSwitch(1);
-                              cubit.toolbarColorSwitch(1);
-
-                            },
-                            child: Text(
-                              'finished'.tr(context),
-                              style: TextStyle(
-                                  fontSize: 11.sp,
-                                  color: cubit.toolbarColors[1]==false? OwnTheme.colorPalette['white']:OwnTheme.colorPalette['primary'],
-                                  fontWeight: FontWeight.w300,
-                                  fontFamily: lang == "ar" ? "fontAr" : "fontEn"
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                              cubit.toolbarSwitch(2);
-                              cubit.toolbarColorSwitch(2);
-                            },
-                            child: Text(
-                              'favorites'.tr(context),
-                              style: TextStyle(
-                                  fontSize: 11.sp,
-                                  color: cubit.toolbarColors[2]==false? OwnTheme.colorPalette['white']:OwnTheme.colorPalette['primary'],
-                                  fontWeight: FontWeight.w300,
-                                  fontFamily: lang == "ar" ? "fontAr" : "fontEn"
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: size.height*.04,),
-
-                    if(cubit.count==2)
-                    buildFavoritesWidget(size,context),
-
-                    if(cubit.count==1)
-                      AppCubit.get(context).bookingModelComplete!=null ?
-                     AppCubit.get(context).bookingModelComplete!.data!.data!.isNotEmpty?
-                      buildFinishedWidget(size,context,AppCubit.get(context).bookingModelComplete!):
-                      Container(
-                        color:  OwnTheme.colorPalette['black'],
-                      ):
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(
-                            color: OwnTheme.colorPalette['primary'],
-                          )
-                        ],
-                      ),
-
-
-                    if(cubit.count==0)
-                    AppCubit.get(context).bookingModelUpcoming!=null?
-                    buildUpComingWidget(context, size,AppCubit.get(context).bookingModelUpcoming!):
-                   Column(
-                       mainAxisAlignment: MainAxisAlignment.center,
-                       crossAxisAlignment: CrossAxisAlignment.center,
-                       children: [
-                         CircularProgressIndicator(
-                           color: OwnTheme.colorPalette['primary'],
-                         )
-                       ],
-                    ),
-
-
-
-                  ],
-                ),
-              ),
-            ),
-          );
-      },
-    );
-  }
-
-  Widget buildFavoritesWidget(Size size,context){
-    return ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context,index){
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: const Color(0xff282828),
-                border: Border.all(
-                    color: const Color(0xff282828)
-                )
-            ),
-            height: size.height*.18,
-            child: Row(
-              children: [
-                Image(
-                  image: NetworkImage(
-                      'http://api.mahmoudtaha.com/images/${AppCubit.get(context).allFavorite[index]['image']}'
-                  ),
-                  fit: BoxFit.cover,
-                  width: size.width*.32,
-                  height: size.height*.18,
-                ),
-                SizedBox(width: size.width*.04,),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        child: Text(
-                          '${AppCubit.get(context).allFavorite[index]['name']}',
-                          style: TextStyle(
-                              fontSize: 11.sp,
-                              color:  OwnTheme.colorPalette['white'],
-                              fontWeight: FontWeight.w500,
-                              fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                          ),
-                          overflow: TextOverflow.ellipsis,
-
-                        ),
-                        width: 150,
-
-                      ),
-                      SizedBox(height: size.height*.008,),
-                      Container(
-                        child: Text(
-                          '${AppCubit.get(context).allFavorite[index]['address']}',
-                          style: TextStyle(
-                              fontSize: 10.sp,
-                              color:  OwnTheme.colorPalette['gray'],
-                              fontWeight: FontWeight.w500,
-                              fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        width: 150,
-                      ),
-                      SizedBox(height: size.height*.01,),
-                      SizedBox(
-                        height: size.height*.04,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.location_pin,
-                              color:  OwnTheme.colorPalette['primary'],
-                              size:  size.width*.04,
-                            ),
-                            SizedBox(width: size.width*.01,),
-                            Text(
-                              '4,0 km to city',
-                              style: TextStyle(
-                                  fontSize: 10.sp,
-                                  color:  OwnTheme.colorPalette['gray'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                            ),
-                            SizedBox(width: size.width*.07,),
-                            Text(
-                              '${AppCubit.get(context).allFavorite[index]['price']}',
-                              style: TextStyle(
-                                  fontSize: 15.sp,
-                                  color:  OwnTheme.colorPalette['white'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                            ),
-
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: size.height*.01,),
-                      SizedBox(
-                        height: size.height*.03,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color:  OwnTheme.colorPalette['primary'],
-                              size:  size.width*.05,
-                            ),
-                            Text(
-                              '${AppCubit.get(context).allFavorite[index]['rate']}',
-                              style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color:  OwnTheme.colorPalette['white'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                            ),
-                            SizedBox(width: size.width*.17,),
-                            Text(
-                              '/per night',
-                              style: TextStyle(
-                                  fontSize: 9.sp,
-                                  color:  OwnTheme.colorPalette['gray'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                            ),
-
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          );
-        },
-        separatorBuilder: (context,index){
-          return const SizedBox(height: 10,);
-        },
-        itemCount: AppCubit.get(context).allFavorite.length
-    );
+                      Row(children: [
+                        Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                                color: const Color(0xFFFFF3EC),
+                                borderRadius: BorderRadius.circular(8)),
+                            child: Icon(bookingServiceIcon(booking.serviceType),
+                                color: OwnTheme.colorPalette['primary'])),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                              Text(booking.destination,
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700)),
+                              Text(bookingServiceLabel(booking.serviceType),
+                                  style: TextStyle(
+                                      color: OwnTheme.colorPalette['gray']))
+                            ])),
+                        Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 5),
+                            decoration: BoxDecoration(
+                                color: color.withOpacity(.1),
+                                borderRadius: BorderRadius.circular(20)),
+                            child: Text(
+                                bookingStatusLabel(booking.normalizedStatus),
+                                style: TextStyle(
+                                    color: color,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700)))
+                      ]),
+                      const SizedBox(height: 14),
+                      _line(Icons.route_outlined,
+                          '${booking.departureCity} → ${booking.destination}'),
+                      const SizedBox(height: 8),
+                      _line(Icons.calendar_today_outlined,
+                          '${DateFormat('dd MMM yyyy').format(booking.departureDate)} – ${DateFormat('dd MMM yyyy').format(booking.returnDate)}'),
+                      if (booking.ownerResponse.isNotEmpty) ...[
+                        const Divider(height: 24),
+                        Text('Travel365: ${booking.ownerResponse}',
+                            style: TextStyle(
+                                color: OwnTheme.colorPalette['secondary'],
+                                fontWeight: FontWeight.w600))
+                      ],
+                    ]))));
   }
 
-  Widget buildFinishedWidget(Size size,context,BookingModel ?model){
-    return ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context,index){
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: const Color(0xff282828),
-                          border: Border.all(
-                              color: const Color(0xff282828)
-                          )
-                      ),
-                      child: Image(
-                        image: NetworkImage(
-                            'http://api.mahmoudtaha.com/images/${model!.data!.data![index].hotel!.hotelImages![0].image}'
-                        ),
-                        fit: BoxFit.cover,
-                        width: size.width*.36,
-                        height: size.height*.2,
-                      ),
-                    ),
-                    SizedBox(width: size.width*.04,),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${model.data!.data![index].hotel!.name}',
-                              style: TextStyle(
-                                  fontSize: 11.sp,
-                                  color:  OwnTheme.colorPalette['white'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${model.data!.data![index].hotel!.address}',
-                              style: TextStyle(
-                                  fontSize: 9.sp,
-                                  color:  OwnTheme.colorPalette['gray'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                '${model.data!.data![index].hotel!.createdAt!.day}',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              Text(
-                                ' Sep - ',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              Text(
-                                '${model.data!.data![index].hotel!.updatedAt!.day}',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              Text(
-                                ' Sep',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                            ],
-                          ),
+  Widget _line(IconData icon, String text) => Row(children: [
+        Icon(icon, size: 18, color: OwnTheme.colorPalette['secondary']),
+        const SizedBox(width: 9),
+        Expanded(child: Text(text))
+      ]);
+}
 
-                          SizedBox(
-                            height: size.height*.04,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.location_pin,
-                                  color:  OwnTheme.colorPalette['primary'],
-                                  size:  size.width*.04,
-                                ),
-                                SizedBox(width: size.width*.01,),
-                                Text(
-                                  '4,0 km to city',
-                                  style: TextStyle(
-                                      fontSize: 10.sp,
-                                      color:  OwnTheme.colorPalette['gray'],
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                  ),
-                                ),
+class _Empty extends StatelessWidget {
+  const _Empty({required this.onBook});
+  final VoidCallback onBook;
+  @override
+  Widget build(BuildContext context) => Center(
+      child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.luggage_outlined,
+                size: 64, color: OwnTheme.colorPalette['secondary']),
+            const SizedBox(height: 16),
+            const Text('No bookings yet',
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Text('Choose any destination and submit your travel details.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: OwnTheme.colorPalette['gray'])),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+                onPressed: onBook,
+                icon: const Icon(Icons.add),
+                label: const Text('Book a Trip'))
+          ])));
+}
 
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            height: size.height*.03,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color:  OwnTheme.colorPalette['primary'],
-                                  size:  size.width*.06,
-                                ),
-                                SizedBox(width: size.width*.01,),
-                                Text(
-                                  '${model.data!.data![index].hotel!.rate}',
-                                  style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color:  OwnTheme.colorPalette['white'],
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                  ),
-                                ),
-
-                              ],
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                '\$${model.data!.data![index].hotel!.price}',
-                                style: TextStyle(
-                                    fontSize: 15.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              Text(
-                                '/per night',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['gray'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-
-                            ],
-                          ),
-
-
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${model.data!.data![index+1].hotel!.name}',
-                              style: TextStyle(
-                                  fontSize: 11.sp,
-                                  color:  OwnTheme.colorPalette['white'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 170,
-                            child: Text(
-                              '${model.data!.data![index+1].hotel!.address}',
-                              style: TextStyle(
-                                  fontSize: 9.sp,
-                                  color:  OwnTheme.colorPalette['gray'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                '${model.data!.data![index+1].hotel!.createdAt!.day}',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              Text(
-                                ' Sep - ',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              Text(
-                                '${model.data!.data![index+1].hotel!.updatedAt!.day}',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              Text(
-                                ' Sep',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          SizedBox(
-                            height: size.height*.04,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.location_pin,
-                                  color:  OwnTheme.colorPalette['primary'],
-                                  size:  size.width*.04,
-                                ),
-                                SizedBox(width: size.width*.01,),
-                                Text(
-                                  '4,0 km to city',
-                                  style: TextStyle(
-                                      fontSize: 10.sp,
-                                      color:  OwnTheme.colorPalette['gray'],
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                  ),
-                                ),
-
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            height: size.height*.03,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color:  OwnTheme.colorPalette['primary'],
-                                  size:  size.width*.06,
-                                ),
-                                SizedBox(width: size.width*.01,),
-                                Text(
-                                  '${model.data!.data![index+1].hotel!.rate}',
-                                  style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color:  OwnTheme.colorPalette['white'],
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                  ),
-                                ),
-
-                              ],
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                '\$${model.data!.data![index+1].hotel!.price}',
-                                style: TextStyle(
-                                    fontSize: 15.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              Text(
-                                '/per night',
-                                style: TextStyle(
-                                    fontSize: 9.sp,
-                                    color:  OwnTheme.colorPalette['gray'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-
-                            ],
-                          ),
-
-
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: size.width*.04,),
-                    Container(
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: const Color(0xff282828),
-                          border: Border.all(
-                              color: const Color(0xff282828)
-                          )
-                      ),
-                      child: Image(
-                        image: NetworkImage(
-                            'http://api.mahmoudtaha.com/images/${model.data!.data![index+1].hotel!.hotelImages![0].image}'
-                        ),
-                        fit: BoxFit.cover,
-                        width: size.width*.36,
-                        height: size.height*.2,
-                      ),
-                    ),
-                  ],
-                ),
-
-              ],
-            ),
-          );
-        },
-        separatorBuilder: (conext,index){
-          return const SizedBox(width: 10,);
-        },
-        itemCount:model!.data!.data!.length-1
-    );
-  }
-
-  Widget buildUpComingWidget(context , size,BookingModel model){
-
-    return ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context,index){
-          return Container(
-            margin: const EdgeInsets.symmetric(
-                horizontal: 10
-            ),
-            padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 10
-            ),
-            child: Column(
-              children: [
-                Text(
-                  '${model.data!.data![index].createdAt}',
-                  style: TextStyle(
-                      fontSize: 10.sp,
-                      color:  OwnTheme.colorPalette['white'],
-                      fontWeight: FontWeight.w500,
-                      fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                  ),
-                ),
-                SizedBox(height: size.height*.01,),
-                Container(
-                  clipBehavior: Clip.antiAliasWithSaveLayer,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: const Color(0xff282828),
-                      border: Border.all(
-                          color: const Color(0xff282828)
-                      )
-                  ),
-                  child: Column(
-                    children: [
-                      Stack(
-                        children: [
-                          Image(
-                            image:  NetworkImage(
-                                'http://api.mahmoudtaha.com/images/${model.data!.data![index].hotel!.hotelImages![0].image}'
-                            ),
-                            fit: BoxFit.cover,
-                            width: size.width,
-                            height: size.height*.18,
-                          ),
-                          Positioned(
-                            right: 10,
-                            child: IconButton(
-                              icon:  CircleAvatar(
-                                child: AppCubit.get(context).upCommingValues[index] ==false?Icon(
-                                  Icons.favorite_border,
-                                  size: 20,
-                                ):Icon(
-                                  Icons.favorite,
-                                  size: 20,
-                                ),
-                                radius: 28,
-                                backgroundColor: Color(0xff282828),
-                              ),
-                              onPressed: (){
-                                setState(() {
-                                  AppCubit.get(context).upCommingValues[index] =!AppCubit.get(context).upCommingValues[index];
-
-                                });
-                                AppCubit.get(context).insertDatabase(
-                                    name: '${model.data!.data![index].hotel!.name}',
-                                    address: '${model.data!.data![index].hotel!.address}',
-                                    price: '${model.data!.data![index].hotel!.price}',
-                                    rate: '${model.data!.data![index].hotel!.rate}',
-                                    image: '${model.data!.data![index].hotel!.hotelImages![0].image}'
-                                );
-                              },
-                            ),
-                          )
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 200,
-                              child: Text(
-                                '${model.data!.data![index].hotel!.name}',
-                                style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 50,),
-                            Text(
-                              '\$${model.data!.data![index].hotel!.price}',
-                              style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color:  OwnTheme.colorPalette['white'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                            ),
-                            SizedBox(width: size.width*.02,),
-
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8
-                        ),
-                        child:
-                        Row(
-                          children: [
-                            SizedBox(
-                              child: Text(
-                                '${model.data!.data![index].hotel!.address}',
-                                style: TextStyle(
-                                    fontSize: 8.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              width: 150,
-                            ),
-                            const Spacer(),
-                            Icon(
-                              Icons.location_pin,
-                              color:  OwnTheme.colorPalette['primary'],
-                              size:  size.width*.04,
-                            ),
-                            Text(
-                              '4,0 km to city',
-                              style: TextStyle(
-                                  fontSize: 10.sp,
-                                  color:  OwnTheme.colorPalette['gray'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                            ),
-                            SizedBox(width: size.width*.01,),
-
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color:  OwnTheme.colorPalette['primary'],
-                              size:  size.width*.07,
-                            ),
-
-                            SizedBox(width: size.width*.04,),
-                            Text(
-                               '${model.data!.data![index].hotel!.rate}',
-                              style: TextStyle(
-                                  fontSize: 10.sp,
-                                  color:  OwnTheme.colorPalette['gray'],
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                              ),
-                            ),
-
-                          ],
-                        ),
-                      ),
-
-                    ],
-                  ),
-                )
-
-              ],
-            ),
-          );
-        },
-        separatorBuilder: (context,index){
-          return const SizedBox(height: 10,);
-        },
-        itemCount: model.data!.data!.length
-    );
-
-
+class _Error extends StatelessWidget {
+  const _Error({required this.error});
+  final Object? error;
+  @override
+  Widget build(BuildContext context) {
+    final denied = error is FirebaseException &&
+        (error as FirebaseException).code == 'permission-denied';
+    return Center(
+        child: Padding(
+            padding: const EdgeInsets.all(30),
+            child: Text(
+                denied
+                    ? 'Bookings are blocked by Firestore rules. Deploy the included rules.'
+                    : 'Could not load bookings.',
+                textAlign: TextAlign.center)));
   }
 }
