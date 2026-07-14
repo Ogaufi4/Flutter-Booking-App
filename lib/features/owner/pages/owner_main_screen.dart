@@ -1,5 +1,6 @@
 import 'package:booking_app/features/owner/pages/owner_bookings_screen.dart';
 import 'package:booking_app/features/owner/pages/owner_dashboard_screen.dart';
+import 'package:booking_app/features/owner/pages/owner_support_settings_screen.dart';
 import 'package:booking_app/resources/themes/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +64,19 @@ class _OwnerProfile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(user?.email ?? '',
               style: TextStyle(color: OwnTheme.colorPalette['gray'])),
+          const SizedBox(height: 24),
+          const Divider(),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.support_agent_outlined),
+            title: const Text('Support contact'),
+            subtitle:
+                const Text('Phone and email shown to customers in bookings'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const OwnerSupportSettingsScreen())),
+          ),
+          const Divider(),
           const Spacer(),
           SizedBox(
               width: double.infinity,

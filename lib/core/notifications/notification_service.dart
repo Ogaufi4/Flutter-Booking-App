@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../firebase_options.dart';
@@ -50,10 +51,17 @@ class NotificationService {
   Future<void> registerCurrentDevice() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-    await FirebaseMessaging.instance
+    final settings = await FirebaseMessaging.instance
         .requestPermission(alert: true, badge: true, sound: true);
+    final status = settings.authorizationStatus;
+    final granted = status == AuthorizationStatus.authorized ||
+        status == AuthorizationStatus.provisional;
     final token = await FirebaseMessaging.instance.getToken();
     if (token == null) return;
+    // FCM issues a token even when the user denies notification permission, so
+    // the grant -- not the token -- decides whether the backend may target this
+    // device. Re-writing `enabled` on every call also disables devices whose
+    // permission was revoked after an earlier grant.
     await FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
@@ -61,8 +69,8 @@ class NotificationService {
         .doc(token.hashCode.toUnsigned(32).toString())
         .set({
       'token': token,
-      'platform': 'android',
-      'enabled': true,
+      'platform': defaultTargetPlatform.name,
+      'enabled': granted,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }

@@ -10,11 +10,8 @@ import {setGlobalOptions} from "firebase-functions/v2";
 initializeApp();
 setGlobalOptions({region: "us-central1", maxInstances: 10});
 const db = getFirestore();
-const ownerEmail = defineString("OWNER_EMAIL", {default: "owner@example.com"});
 const replyToEmail = defineString("REPLY_TO_EMAIL", {default: ""});
 const metaEnabled = defineBoolean("META_WHATSAPP_ENABLED", {default: false});
-const supportPhone = defineString("SUPPORT_PHONE", {default: "+267 71 000 000"});
-const supportEmail = defineString("SUPPORT_EMAIL", {default: "support@travel365.co.bw"});
 
 type Booking = Record<string, unknown> & {userId: string; fullName: string; email: string; phone: string; destination: string; status: string; ownerResponse?: string; declineReason?: string};
 const manager = (token: Record<string, unknown>) => token.role === "owner" || token.role === "staff";
@@ -98,21 +95,40 @@ async function sendMetaWhatsApp(_booking: Booking, template: string, _text: stri
 // aligned. Every customer-facing body keeps the booking reference,
 // destination, status, and support details visible.
 type ChannelMessage = {title: string; subject: string; heading: string; body: string};
+type SupportContact = {phone: string; email: string};
 const reference = (bookingId: string) => bookingId.slice(0, 8).toUpperCase();
-const supportLine = () => `Questions? Call ${supportPhone.value()} or email ${supportEmail.value()}.`;
-function bookingMessage(kind: string, booking: Booking, bookingId: string): ChannelMessage {
+
+// Support contact is owner-editable at settings/support, so it is read per
+// event rather than baked into deploy config. A missing or half-filled doc
+// yields no support line at all -- never a placeholder number.
+async function supportContact(): Promise<SupportContact> {
+  const snapshot = await db.collection("settings").doc("support").get();
+  const phone = snapshot.get("phone");
+  const email = snapshot.get("email");
+  return {
+    phone: typeof phone === "string" ? phone.trim() : "",
+    email: typeof email === "string" ? email.trim() : "",
+  };
+}
+function supportLine(support: SupportContact) {
+  const channels = [];
+  if (support.phone) channels.push(`call ${support.phone}`);
+  if (support.email) channels.push(`email ${support.email}`);
+  return channels.length ? ` Questions? Please ${channels.join(" or ")}.` : "";
+}
+function bookingMessage(kind: string, booking: Booking, bookingId: string, support: SupportContact): ChannelMessage {
   const ref = reference(bookingId);
   switch (kind) {
   case "created_managers":
     return {title: "New Travel365 booking", subject: "New Travel365 booking", heading: "New booking received", body: `${booking.fullName} submitted booking ${ref} for ${booking.destination}.`};
   case "created_customer":
-    return {title: "Travel365 booking received", subject: "Travel365 booking received", heading: "We received your booking", body: `Hello ${booking.fullName}, your booking ${ref} to ${booking.destination} is awaiting review. ${supportLine()}`};
+    return {title: "Travel365 booking received", subject: "Travel365 booking received", heading: "We received your booking", body: `Hello ${booking.fullName}, your booking ${ref} to ${booking.destination} is awaiting review.${supportLine(support)}`};
   case "declined":
-    return {title: "Booking declined", subject: "Travel365 booking declined", heading: "Your booking was declined", body: `Your booking ${ref} to ${booking.destination} was declined: ${booking.declineReason || "Please contact Travel365."} ${supportLine()}`};
+    return {title: "Booking declined", subject: "Travel365 booking declined", heading: "Your booking was declined", body: `Your booking ${ref} to ${booking.destination} was declined: ${booking.declineReason || "Please contact Travel365."}${supportLine(support)}`};
   case "cancelled_managers":
     return {title: "Booking cancelled", subject: "Travel365 booking cancelled", heading: "Booking cancelled", body: `${booking.fullName} cancelled booking ${ref} for ${booking.destination}.`};
   default:
-    return {title: `Booking ${kind}`, subject: `Travel365 booking ${kind}`, heading: `Your booking is ${kind}`, body: `Your booking ${ref} to ${booking.destination} is now ${kind}. ${booking.ownerResponse ? `${booking.ownerResponse} ` : ""}${supportLine()}`};
+    return {title: `Booking ${kind}`, subject: `Travel365 booking ${kind}`, heading: `Your booking is ${kind}`, body: `Your booking ${ref} to ${booking.destination} is now ${kind}.${booking.ownerResponse ? ` ${booking.ownerResponse}` : ""}${supportLine(support)}`};
   }
 }
 
@@ -120,9 +136,9 @@ export const onBookingCreated = onDocumentCreated("bookings/{bookingId}", async 
   const bookingId = event.params.bookingId; const booking = event.data?.data() as Booking | undefined; if (!booking) return;
   const marker = await claimEvent(`${bookingId}_created`, bookingId, "created"); if (!marker) return;
   try {
-    const managerContacts = await managers();
-    const forManagers = bookingMessage("created_managers", booking, bookingId);
-    const forCustomer = bookingMessage("created_customer", booking, bookingId);
+    const [managerContacts, support] = await Promise.all([managers(), supportContact()]);
+    const forManagers = bookingMessage("created_managers", booking, bookingId, support);
+    const forCustomer = bookingMessage("created_customer", booking, bookingId, support);
     const [pushCount, , , whatsapp] = await Promise.all([
       push(managerContacts.ids, forManagers.title, forManagers.body, bookingId),
       email(managerContacts.emails, forManagers.subject, forManagers.heading, forManagers.body, bookingId),
@@ -140,13 +156,14 @@ export const onBookingUpdated = onDocumentUpdated("bookings/{bookingId}", async 
   try {
     let pushCount = 0;
     let whatsapp: Record<string, unknown> = {enabled: metaEnabled.value(), sent: false};
+    const support = await supportContact();
     if (["approved", "declined", "completed"].includes(current)) {
-      const message = bookingMessage(current, after, bookingId);
+      const message = bookingMessage(current, after, bookingId, support);
       pushCount = await push([after.userId], message.title, message.body, bookingId);
       await email(after.email, message.subject, message.heading, message.body, bookingId);
       whatsapp = await sendMetaWhatsApp(after, `booking_${current}`, message.body);
     } else if (current === "cancelled") {
-      const message = bookingMessage("cancelled_managers", after, bookingId);
+      const message = bookingMessage("cancelled_managers", after, bookingId, support);
       const managerContacts = await managers();
       pushCount = await push(managerContacts.ids, message.title, message.body, bookingId);
       await email(managerContacts.emails, message.subject, message.heading, message.body, bookingId);
