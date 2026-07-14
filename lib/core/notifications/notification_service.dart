@@ -1,0 +1,97 @@
+import 'dart:async';
+import 'package:booking_app/features/bookings/pages/booking_details_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../../firebase_options.dart';
+
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+}
+
+class NotificationService {
+  NotificationService._();
+  static final instance = NotificationService._();
+  static final navigatorKey = GlobalKey<NavigatorState>();
+  final local = FlutterLocalNotificationsPlugin();
+  StreamSubscription<User?>? authSubscription;
+
+  Future<void> initialize() async {
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    const android = AndroidInitializationSettings('@mipmap/launcher_icon');
+    await local.initialize(const InitializationSettings(android: android),
+        onDidReceiveNotificationResponse: (response) {
+      if (response.payload?.isNotEmpty == true) openBooking(response.payload!);
+    });
+    await local
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(const AndroidNotificationChannel(
+            'travel365_bookings', 'Travel365 bookings',
+            description: 'Booking updates and approval notifications',
+            importance: Importance.high));
+    FirebaseMessaging.onMessage.listen(_showForeground);
+    FirebaseMessaging.onMessageOpenedApp.listen(_openFromMessage);
+    final initial = await FirebaseMessaging.instance.getInitialMessage();
+    if (initial != null)
+      Future<void>.delayed(
+          const Duration(milliseconds: 800), () => _openFromMessage(initial));
+    authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) registerCurrentDevice();
+    });
+    FirebaseMessaging.instance.onTokenRefresh
+        .listen((_) => registerCurrentDevice());
+  }
+
+  Future<void> registerCurrentDevice() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    await FirebaseMessaging.instance
+        .requestPermission(alert: true, badge: true, sound: true);
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null) return;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('devices')
+        .doc(token.hashCode.toUnsigned(32).toString())
+        .set({
+      'token': token,
+      'platform': 'android',
+      'enabled': true,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> _showForeground(RemoteMessage message) async {
+    final notification = message.notification;
+    if (notification == null) return;
+    await local.show(
+        message.hashCode,
+        notification.title,
+        notification.body,
+        const NotificationDetails(
+            android: AndroidNotificationDetails(
+                'travel365_bookings', 'Travel365 bookings',
+                channelDescription:
+                    'Booking updates and approval notifications',
+                importance: Importance.high,
+                priority: Priority.high,
+                icon: '@mipmap/launcher_icon')),
+        payload: message.data['bookingId']?.toString());
+  }
+
+  void _openFromMessage(RemoteMessage message) {
+    final id = message.data['bookingId']?.toString();
+    if (id != null && id.isNotEmpty) openBooking(id);
+  }
+
+  void openBooking(String bookingId) {
+    navigatorKey.currentState?.pushNamed('/bookingDetails',
+        arguments: BookingDetailsArgs(bookingId: bookingId));
+  }
+}

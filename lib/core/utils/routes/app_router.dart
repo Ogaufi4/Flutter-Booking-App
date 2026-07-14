@@ -1,9 +1,11 @@
-import 'package:booking_app/core/bottom_navigation/pages/main_screen.dart';
+import 'package:booking_app/features/auth/pages/role_gate_screen.dart';
+import 'package:booking_app/features/bookings/pages/booking_details_screen.dart';
 import 'package:booking_app/data/models/user_model.dart';
 import 'package:booking_app/features/filter/pages/filter_screen.dart';
 import 'package:booking_app/features/filter/pages/map_filter_screen.dart';
 import 'package:booking_app/features/filter/pages/view_filter_list.dart';
 import 'package:booking_app/features/get_started/pages/get_started_screen.dart';
+import 'package:booking_app/features/auth/pages/phone_otp_screen.dart';
 import 'package:booking_app/features/language/pages/lang_screen.dart';
 import 'package:booking_app/features/login/login_screen.dart';
 import 'package:booking_app/features/onboarding/pages/onboarding_screen.dart';
@@ -20,7 +22,18 @@ class AppRouter {
     switch (settings.name) {
       case '/main':
         return PageTransition(
-          child: MainScreen(),
+          child: const RoleGateScreen(),
+          type: PageTransitionType.rightToLeft,
+          duration: animationDuration,
+          settings: settings,
+        );
+      case '/bookingDetails':
+        final args = settings.arguments as BookingDetailsArgs;
+        return PageTransition(
+          child: BookingDetailsScreen(
+            bookingId: args.bookingId,
+            ownerMode: args.ownerMode,
+          ),
           type: PageTransitionType.rightToLeft,
           duration: animationDuration,
           settings: settings,
@@ -52,6 +65,13 @@ class AppRouter {
       case '/login':
         return PageTransition(
           child: LoginScreen(),
+          type: PageTransitionType.rightToLeft,
+          duration: animationDuration,
+          settings: settings,
+        );
+      case '/otp':
+        return PageTransition(
+          child: const PhoneOtpScreen(),
           type: PageTransitionType.rightToLeft,
           duration: animationDuration,
           settings: settings,
@@ -90,7 +110,7 @@ class AppRouter {
           settings: settings,
         );
 
-        case '/map':
+      case '/map':
         return PageTransition(
           child: MapFilterScreen(),
           type: PageTransitionType.rightToLeft,
@@ -98,7 +118,7 @@ class AppRouter {
           settings: settings,
         );
 
-        case '/viewFilter':
+      case '/viewFilter':
         return PageTransition(
           child: ViewFilterList(),
           type: PageTransitionType.rightToLeft,

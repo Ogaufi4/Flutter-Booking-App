@@ -1,4 +1,4 @@
-# Flutter Booking App
+﻿# Travel365 App
 
 -App Description
 
@@ -116,3 +116,4 @@ https://user-images.githubusercontent.com/70426380/193424370-95802184-203d-4bff-
 *Arabic Profile Screen
 
 ![Screenshot_20221001_201754_com example booking_app](https://user-images.githubusercontent.com/70426380/193423421-b67b7cfb-e2bc-4d45-97a4-5799692b0a18.jpg)
+

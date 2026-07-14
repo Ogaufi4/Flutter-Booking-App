@@ -11,42 +11,48 @@ class ButtonKey extends StatelessWidget {
   final bool isLoading;
   final String? language;
 
-  const ButtonKey(
-      {Key? key,
-      this.function,
-      this.buttonText,
-      this.textColor,
-      this.backgroundColor,
-      this.padding,
-      this.radius = round,
-      this.isLoading = false,
-      this.language})
-      : super(key: key);
+  const ButtonKey({
+    Key? key,
+    this.function,
+    this.buttonText,
+    this.textColor,
+    this.backgroundColor,
+    this.padding,
+    this.radius = round,
+    this.isLoading = false,
+    this.language,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading)
-      return Center(child: CircularProgressIndicator());
-    else
-      return GestureDetector(
-        onTap: () {
-          function != null ? function!() : null;
-        },
-        child: Container(
-          padding: padding ?? EdgeInsets.all(space1),
-          decoration: BoxDecoration(
-              color: backgroundColor ?? OwnTheme.colorPalette['primary'],
-              borderRadius: BorderRadius.circular(radius)),
-          child: Center(
-            child: Text(
-              '${buttonText}',
-              style: OwnTheme.normalBoldTextStyle(lang: language ?? lang)
-                  .copyWith(color: textColor ?? OwnTheme.colorPalette['white']),
-            ),
-          ),
+    if (isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          color: OwnTheme.colorPalette['primary'],
         ),
       );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: function,
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: backgroundColor ?? OwnTheme.colorPalette['primary'],
+          foregroundColor: textColor ?? OwnTheme.colorPalette['white'],
+          padding: padding ?? const EdgeInsets.all(space1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
+        ),
+        child: Text(
+          buttonText ?? '',
+          style: OwnTheme.normalBoldTextStyle(lang: language ?? lang).copyWith(
+            color: textColor ?? OwnTheme.colorPalette['white'],
+          ),
+        ),
+      ),
+    );
   }
 }
-
-

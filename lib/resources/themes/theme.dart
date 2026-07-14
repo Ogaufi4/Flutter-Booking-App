@@ -4,56 +4,107 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 final ThemeData ownThemeData = ThemeData(
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: Color(0xff282828),
-        selectedItemColor: OwnTheme.colorPalette['primary'],
-        unselectedItemColor: OwnTheme.colorPalette['gray'],
-        selectedLabelStyle: OwnTheme.smallTextStyle(lang: lang)
-            .colorChange(color: 'primary'),
-    unselectedLabelStyle: OwnTheme.smallTextStyle(lang: lang)
-        .colorChange(color: 'gray'),
-      showSelectedLabels: true,
-      showUnselectedLabels: true,
+  useMaterial3: true,
+  brightness: Brightness.light,
+  colorScheme: const ColorScheme.light(
+    primary: Color(0xFFE46225),
+    secondary: Color(0xFF262261),
+    surface: Color(0xFFFFFFFF),
+    error: Color(0xFFB42318),
+    onPrimary: Color(0xFFFFFFFF),
+    onSurface: Color(0xFF262833),
+  ),
+  scaffoldBackgroundColor: OwnTheme.colorPalette['bg'],
+  primarySwatch: OwnTheme.primaryColor,
+  fontFamily: 'fontEn',
+  appBarTheme: const AppBarTheme(
+    elevation: 0,
+    centerTitle: false,
+    backgroundColor: Colors.white,
+    foregroundColor: Color(0xFF262261),
+    surfaceTintColor: Colors.transparent,
+  ),
+  cardTheme: CardThemeData(
+    color: OwnTheme.colorPalette['surface'],
+    elevation: 0,
+    margin: EdgeInsets.zero,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+      side: const BorderSide(color: Color(0xFFE7E9EF)),
     ),
-    appBarTheme: const AppBarTheme(
-      elevation: 0.0,
-      backgroundColor: Colors.transparent,
+  ),
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    elevation: 8,
+    backgroundColor: Colors.white,
+    selectedItemColor: OwnTheme.colorPalette['primary'],
+    unselectedItemColor: OwnTheme.colorPalette['gray'],
+    selectedLabelStyle:
+        OwnTheme.smallBoldTextStyle(lang: lang).colorChange(color: 'primary'),
+    unselectedLabelStyle:
+        OwnTheme.smallTextStyle(lang: lang).colorChange(color: 'gray'),
+    showSelectedLabels: true,
+    showUnselectedLabels: true,
+    type: BottomNavigationBarType.fixed,
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: OwnTheme.colorPalette['bgGray'],
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFE1E4EA)),
     ),
-    primarySwatch: OwnTheme.primaryColor,
-    scaffoldBackgroundColor: OwnTheme.colorPalette['bg'],
-    bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: Colors.transparent,
-        modalBackgroundColor: Colors.transparent));
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFE1E4EA)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFF262261), width: 1.4),
+    ),
+  ),
+  dividerColor: const Color(0xFFE7E9EF),
+  bottomSheetTheme: const BottomSheetThemeData(
+    backgroundColor: Colors.white,
+    modalBackgroundColor: Colors.white,
+    surfaceTintColor: Colors.transparent,
+  ),
+);
 
 class OwnTheme {
   //  ------------------------------- colorPalette ----------------------------
 
   static const Map<String, Color> colorPalette = <String, Color>{
     'white': Color(0xFFFFFFFF),
-    'black': Color(0xFF000000),
-    'disable': Color(0xFFe8e8e8),
-    'gray': Color(0xFF474747),
-    'bgGray': Color(0xFF2C2C2C),
-    'link': Color(0xFF3784fc),
-    'primary': Color(0xFF4FBE9F),
-    'secondary': Color(0xFFF9C60A),
-    'bg': Color(0xFF1A1A1A),
-    'drawer': Color(0xFF313A42)
+    'black': Color(0xFF262833),
+    'navy': Color(0xFF262261),
+    'disable': Color(0xFFD7DAE0),
+    'gray': Color(0xFF767A86),
+    'bgGray': Color(0xFFF6F7F9),
+    'surface': Color(0xFFFFFFFF),
+    'surfaceAlt': Color(0xFFFAFAFB),
+    'border': Color(0xFFE1E4EA),
+    'link': Color(0xFF262261),
+    'primary': Color(0xFFE46225),
+    'secondary': Color(0xFF262261),
+    'danger': Color(0xFFB42318),
+    'bg': Color(0xFFFFFFFF),
+    'drawer': Color(0xFFF6F7F9),
   };
 
-  static const MaterialColor primaryColor = const MaterialColor(
-    0xFF4FBE9F, // 0% comes in here, this will be color picked if no shade is selected when defining a Color property which doesn’t require a swatch.
-    const <int, Color>{
-      50: const Color(0xFF4FBE9F ),//10%
-      100: const Color(0xFF4FBE9F),//20%
-      200: const Color(0xFF4FBE9F),//30%
-      300: const Color(0xFF4FBE9F),//40%
-      400: const Color(0xFF4FBE9F),//50%
-      500: const Color(0xFF4FBE9F),//60%
-      600: const Color(0xFF4FBE9F),//70%
-      700: const Color(0xFF4FBE9F),//80%
-      800: const Color(0xFF4FBE9F),//90%
-      900: const Color(0xFF4FBE9F),//100%
+  static const MaterialColor primaryColor = MaterialColor(
+    0xFFE46225,
+    <int, Color>{
+      50: Color(0xFFFFF5EF),
+      100: Color(0xFFFDE5D6),
+      200: Color(0xFFF9C9AB),
+      300: Color(0xFFF1A477),
+      400: Color(0xFFE58148),
+      500: Color(0xFFE46225),
+      600: Color(0xFFBD5620),
+      700: Color(0xFF98431D),
+      800: Color(0xFF7A391D),
+      900: Color(0xFF63321B),
     },
   );
 

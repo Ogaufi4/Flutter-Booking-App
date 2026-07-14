@@ -76,7 +76,7 @@ class _CustomTextBoxNormalState extends State<CustomTextBoxNormal> {
         }
       },
       style:
-          OwnTheme.normalBoldTextStyle(lang: lang).colorChange(color: 'white'),
+          OwnTheme.normalBoldTextStyle(lang: lang).colorChange(color: 'black'),
       decoration: InputDecoration(
           //Good in space but not at all
           // prefix: widget.prefix != null ? widget.prefix : null,

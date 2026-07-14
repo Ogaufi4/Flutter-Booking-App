@@ -29,7 +29,7 @@ class ProfileInfoCard extends StatelessWidget {
               Text(
                 '${user.name!.split(' ').first}',
                 style: OwnTheme.suitableBoldTextStyle(lang: lang)
-                    .colorChange(color: 'white'),
+                    .copyWith(color: OwnTheme.colorPalette['secondary']),
               ),
               SizedBox(height: space0),
               Text(

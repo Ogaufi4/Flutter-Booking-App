@@ -4,24 +4,18 @@ import 'package:booking_app/resources/constants/constants.dart';
 import 'package:flutter/foundation.dart';
 
 class LanguageHelper {
+  static const String defaultLanguage = 'en';
+
   Future<void> setLang(String languageCode) async {
-    debugPrint('Set language code= $languageCode');
-    addStringToSF('lang', languageCode);
-    LocaleCubit().changeLanguage(languageCode);
-    lang = languageCode;
+    debugPrint('Set language code= $defaultLanguage');
+    addStringToSF('lang', defaultLanguage);
+    LocaleCubit().changeLanguage(defaultLanguage);
+    lang = defaultLanguage;
   }
 
   Future<String> getLang() async {
-    final cachedLanguageCode = await getValuesSF('lang');
-    // debugPrint('Get cachedLanguageCode= $cachedLanguageCode');
-    if (cachedLanguageCode.isNotEmpty) {
-      lang = cachedLanguageCode;
-      return cachedLanguageCode;
-    } else {
-      lang = '';
-      addStringToSF('lang', '');
-      // debugPrint('Return default language');
-      return "en";
-    }
+    lang = defaultLanguage;
+    await addStringToSF('lang', defaultLanguage);
+    return defaultLanguage;
   }
 }
