@@ -1,4 +1,4 @@
-import {db, defaultAdminWhatsapp} from "./config";
+import {db, defaultAdminEmail, defaultAdminWhatsapp} from "./config";
 import type {CompanySettings, SupportContact} from "./types";
 
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -16,16 +16,15 @@ export async function supportContact(): Promise<SupportContact> {
 
 /**
  * settings/company -- where owner/admin alerts are SENT. Owner-editable in the
- * app, so it is read per event rather than baked into deploy config. When
- * adminWhatsapp is blank the DEFAULT_ADMIN_WHATSAPP fallback is used, so alerts
- * still reach the owner before anyone has opened the settings screen. A blank
- * adminEmail falls back to the owner/staff addresses in the users collection.
+ * app, so it is read per event rather than baked into deploy config. A blank
+ * field falls back to DEFAULT_ADMIN_WHATSAPP / DEFAULT_ADMIN_EMAIL, so alerts
+ * still reach the owner before anyone has opened the settings screen.
  */
 export async function companySettings(): Promise<CompanySettings> {
   const snapshot = await db.collection("settings").doc("company").get();
   return {
     agencyName: text(snapshot.get("agencyName")) || "Travel365",
-    adminEmail: text(snapshot.get("adminEmail")),
+    adminEmail: text(snapshot.get("adminEmail")) || defaultAdminEmail.value().trim(),
     adminWhatsapp: text(snapshot.get("adminWhatsapp")) || defaultAdminWhatsapp.value().trim(),
   };
 }

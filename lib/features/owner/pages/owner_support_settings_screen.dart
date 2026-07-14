@@ -171,8 +171,8 @@ class _OwnerSupportSettingsScreenState
                     _sectionTitle(
                       'Owner alerts',
                       'Where new-booking and cancellation alerts are sent. '
-                          'Customers never see these. Leave the WhatsApp number '
-                          'empty to use the default (72425104).',
+                          'Customers never see these. Leave a field empty to use '
+                          'the default (72425104 / travel@travel365.co.bw).',
                     ),
                     TextFormField(
                       controller: _adminWhatsapp,
@@ -192,7 +192,7 @@ class _OwnerSupportSettingsScreenState
                       validator: _validateEmail,
                       decoration: const InputDecoration(
                         labelText: 'Owner alert email',
-                        hintText: 'bookings@travel365.co.bw',
+                        hintText: 'travel@travel365.co.bw',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.alternate_email),
                       ),
