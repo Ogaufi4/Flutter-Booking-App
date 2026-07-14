@@ -13,8 +13,8 @@ export const replyToEmail = defineString("REPLY_TO_EMAIL", {default: ""});
 // Fallback owner alert destinations, used only when the matching
 // settings/company field is blank. The owner overrides either from Settings in
 // the app, with no redeploy.
-export const defaultAdminWhatsapp = defineString("DEFAULT_ADMIN_WHATSAPP", {default: "72425104"});
-export const defaultAdminEmail = defineString("DEFAULT_ADMIN_EMAIL", {default: "travel@travel365.co.bw"});
+export const defaultAdminWhatsapp = defineString("DEFAULT_ADMIN_WHATSAPP", {default: "72184392"});
+export const defaultAdminEmail = defineString("DEFAULT_ADMIN_EMAIL", {default: "ogaufimokopakgosi3@gmail.com"});
 
 export const metaEnabled = defineBoolean("META_WHATSAPP_ENABLED", {default: false});
 export const metaPhoneNumberId = defineString("META_PHONE_NUMBER_ID", {default: ""});
