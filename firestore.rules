@@ -41,12 +41,21 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Contact customers SEE in their notifications.
     match /settings/support {
       allow read: if signedIn();
       allow write: if manager();
     }
 
+    // Where owner alerts are SENT. Readable by managers only -- customers have
+    // no reason to see the owner's private WhatsApp number or inbox.
+    match /settings/company {
+      allow read: if manager();
+      allow write: if manager();
+    }
+
     match /notification_events/{eventId} { allow read, write: if false; }
+    match /notification_logs/{logId} { allow read: if manager(); allow write: if false; }
     match /mail/{mailId} { allow read, write: if false; }
   }
 }

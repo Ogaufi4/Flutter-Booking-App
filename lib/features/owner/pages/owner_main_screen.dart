@@ -69,9 +69,9 @@ class _OwnerProfile extends StatelessWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.support_agent_outlined),
-            title: const Text('Support contact'),
-            subtitle:
-                const Text('Phone and email shown to customers in bookings'),
+            title: const Text('Contact settings'),
+            subtitle: const Text(
+                'Customer support contact and where owner alerts are sent'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => const OwnerSupportSettingsScreen())),
