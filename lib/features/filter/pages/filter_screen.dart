@@ -1,18 +1,18 @@
 import 'package:booking_app/core/localization/setup/app_localization.dart';
-import 'package:booking_app/core/utils/extensions/layout_extensions.dart';
-import 'package:booking_app/core/utils/extensions/theme_extensions.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
 import 'package:booking_app/core/utils/network/remote/dio_helper.dart';
 import 'package:booking_app/core/utils/network/remote/end_points.dart';
-import 'package:booking_app/core/utils/widgets/custom_app_bar.dart';
+import 'package:booking_app/core/widgets/luxury_button.dart';
+import 'package:booking_app/core/widgets/luxury_icon_button.dart';
+import 'package:booking_app/core/widgets/luxury_text_field.dart';
 import 'package:booking_app/data/database/facility_helper.dart';
 import 'package:booking_app/data/models/facility_model.dart';
 import 'package:booking_app/data/models/hotel_model.dart';
-import 'package:booking_app/resources/buttonkey/button.dart';
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
 List<HotelDataModel> filteredHotelList = [];
 
 class FilterScreen extends StatefulWidget {
@@ -123,210 +123,102 @@ class _FilterScreenState extends State<FilterScreen> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CustomAppBar(
-            lang: lang,
-            leadingWidget: BackIconAppBar(
-              lang: lang,
-            ),
-          ).safeArea(),
-          Padding(
-              padding: const EdgeInsets.only(
-                  bottom: bottom, right: side, left: side),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screen, AppSpacing.lg, AppSpacing.screen, AppSpacing.xxl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'filter_txt'.tr(context),
-                          style: OwnTheme.avBoldTextStyle(lang: lang)
-                              .colorChange(color: 'white'),
-                        ),
-                        SizedBox(
-                          height: space2,
-                        ),
-                        Text(
-                          'address_txt'.tr(context),
-                          style: OwnTheme.normalBoldTextStyle(lang: lang)
-                              .colorChange(color: 'gray'),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: space0),
-                          child: TextFormField(
-                            style: OwnTheme.normalBoldTextStyle(lang: lang)
-                                .colorChange(color: 'white'),
-                            controller: address,
-                            keyboardType: TextInputType.text,
-                            onFieldSubmitted: (String value) {},
-                            onChanged: (String value) {},
-                            decoration: InputDecoration(
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.never,
-                              filled: true,
-                              fillColor: OwnTheme.colorPalette['bgGray'],
-                              labelText: 'address_desc'.tr(context),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                    color: OwnTheme.colorPalette['primary']!,
-                                    width: 1,
-                                    style: BorderStyle.solid),
-                                borderRadius: BorderRadius.circular(round),
-                              ),
-                              labelStyle:
-                                  OwnTheme.normalBoldTextStyle(lang: lang)
-                                      .colorChange(color: 'gray'),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'price_txt'.tr(context),
-                          style: OwnTheme.normalBoldTextStyle(lang: lang)
-                              .colorChange(color: 'gray'),
-                        ),
-                        RangeSlider(
-                          min: min,
-                          max: max,
-                          values: RangeValues(low, high),
-                          divisions:
-                              pricesLst.length > 0 ? pricesLst.length : 4,
-                          labels: RangeLabels(
-                              '\$${low.round()}', '\$${high.round()} EGP'),
-                          onChanged: (values) => setState(() {
-                            low = values.start;
-                            high = values.end;
-                          }),
-                        ),
-                      ],
+                  LuxuryIconButton(
+                    icon: Icons.arrow_back_ios_new_rounded,
+                    semanticLabel: 'Back',
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      'filter_txt'.tr(context),
+                      style: AppTypography.headingMedium,
                     ),
                   ),
-                  Text(
-                    'facilities_txt'.tr(context),
-                    style: OwnTheme.normalBoldTextStyle(lang: lang)
-                        .colorChange(color: 'gray'),
-                  ),
-                  SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.4,
-                      child: GridView.count(
-                        crossAxisCount: 2,
-                        padding: EdgeInsets.zero,
-                        childAspectRatio: 2.5,
-                        children: [
-                          ...facilitiesLst.map((e) => Row(
-                                children: [
-                                  // GestureDetector(
-                                  //   onTap: () {
-                                  //     if (selectedFacilitiesLst
-                                  //         .contains(e.id)) {
-                                  //       selectedFacilitiesLst.remove(e.id);
-                                  //     } else {
-                                  //       selectedFacilitiesLst.add(e.id!);
-                                  //     }
-                                  //     setState(() {
-                                  //       e.isSelected = !e.isSelected!;
-                                  //     });
-                                  //   },
-                                  //   child: Container(
-                                  //     decoration: BoxDecoration(
-                                  //         shape: BoxShape.circle,
-                                  //         color:
-                                  //             OwnTheme.colorPalette['primary']),
-                                  //     child: Padding(
-                                  //       padding: const EdgeInsets.all(space0),
-                                  //       child:
-                                  //       e.isSelected!
-                                  //           ? Icon(
-                                  //               Icons.check,
-                                  //               size: 30.0,
-                                  //               color: Colors.white,
-                                  //             )
-                                  //           : Icon(
-                                  //               Icons.check_box_outline_blank,
-                                  //               size: 30.0,
-                                  //               color: OwnTheme
-                                  //                   .colorPalette['primary']),
-                                  //     ),
-                                  //   ),
-                                  // ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      if (selectedFacilitiesLst
-                                          .contains(e.id)) {
-                                        selectedFacilitiesLst.remove(e.id);
-                                      } else {
-                                        selectedFacilitiesLst.add(e.id!);
-                                      }
-                                      setState(() {
-                                        e.isSelected = !e.isSelected!;
-                                      });
-                                    },
-                                    child: Stack(
-                                      clipBehavior: Clip.none,
-                                      fit: StackFit.loose,
-                                      children: [
-                                        CircleAvatar(
-                                            radius: 20.sp,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(space0),
-                                              child: CachedNetworkImage(
-                                                imageUrl: '${e.image}',
-                                              ),
-                                            )),
-                                        e.isSelected!
-                                            ? CircleAvatar(
-                                                radius: 20.sp,
-                                                backgroundColor: OwnTheme
-                                                    .colorPalette['gray']!
-                                                    .withOpacity(0.7),
-                                                child: Icon(
-                                                  Icons.check,
-                                                  size: 30,
-                                                  color: Colors.white,
-                                                ),
-                                              )
-                                            : CircleAvatar(
-                                                radius: 20.sp,
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                              )
-                                      ],
-                                    ),
-                                  ),
-
-                                  SizedBox(
-                                    width: space0,
-                                  ),
-                                  Text(
-                                    '${e.name}',
-                                    style: OwnTheme.normalTextStyle(lang: lang)
-                                        .colorChange(color: 'white'),
-                                  )
-                                ],
-                              ))
-                        ],
-                      )),
-                  ButtonKey(
-                    buttonText: 'apply_txt'.tr(context),
-                    function: () {
-                      applyFilter();
-                    },
-                  )
                 ],
-              )),
-        ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Text('address_txt'.tr(context), style: AppTypography.label),
+              const SizedBox(height: AppSpacing.sm),
+              LuxuryTextField(
+                controller: address,
+                label: '',
+                hintText: 'address_desc'.tr(context),
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.search,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Text('price_txt'.tr(context), style: AppTypography.label),
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: AppColors.accent,
+                  inactiveTrackColor: AppColors.border,
+                  thumbColor: AppColors.accent,
+                  overlayColor: AppColors.accentSoft,
+                  valueIndicatorColor: AppColors.primary,
+                ),
+                child: RangeSlider(
+                  min: min,
+                  max: max,
+                  values: RangeValues(low, high),
+                  divisions: pricesLst.length > 0 ? pricesLst.length : 4,
+                  labels: RangeLabels(
+                      '\$${low.round()}', '\$${high.round()} EGP'),
+                  onChanged: (values) => setState(() {
+                    low = values.start;
+                    high = values.end;
+                  }),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text('facilities_txt'.tr(context), style: AppTypography.label),
+              const SizedBox(height: AppSpacing.md),
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                childAspectRatio: 3,
+                mainAxisSpacing: AppSpacing.sm,
+                crossAxisSpacing: AppSpacing.md,
+                children: [
+                  ...facilitiesLst.map((e) => _FacilityTile(
+                        model: e,
+                        onTap: () {
+                          if (selectedFacilitiesLst.contains(e.id)) {
+                            selectedFacilitiesLst.remove(e.id);
+                          } else {
+                            selectedFacilitiesLst.add(e.id!);
+                          }
+                          setState(() {
+                            e.isSelected = !e.isSelected!;
+                          });
+                        },
+                      )),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              LuxuryButton(
+                label: 'apply_txt'.tr(context),
+                onPressed: () {
+                  applyFilter();
+                },
+              ),
+            ],
+          ),
+        ),
       ),
-    ));
+    );
   }
 
   applyFilter() async {
@@ -350,9 +242,69 @@ class _FilterScreenState extends State<FilterScreen> {
       debugPrint('filteredHotelList.length');
       debugPrint(filteredHotelList.length.toString());
       Navigator.pushReplacementNamed(context, '/viewFilter');
-
-
-
     }
+  }
+}
+
+class _FacilityTile extends StatelessWidget {
+  const _FacilityTile({Key? key, required this.model, required this.onTap})
+      : super(key: key);
+
+  final FacilityModel model;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = model.isSelected == true;
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.pill),
+      onTap: onTap,
+      child: Row(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.accentSoft,
+                  border: Border.all(
+                    color: selected ? AppColors.accent : AppColors.border,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  child: CachedNetworkImage(imageUrl: '${model.image}'),
+                ),
+              ),
+              if (selected)
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary.withAlpha(140),
+                  ),
+                  child: const Icon(Icons.check,
+                      size: 22, color: Colors.white),
+                ),
+            ],
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              '${model.name}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.bodyMedium
+                  .copyWith(color: AppColors.textPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

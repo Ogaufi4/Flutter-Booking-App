@@ -1,9 +1,13 @@
+import 'package:booking_app/core/localization/setup/app_localization.dart';
 import 'package:booking_app/core/main_blocs/blocs.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
+import 'package:booking_app/core/widgets/luxury_empty_state.dart';
+import 'package:booking_app/core/widgets/luxury_icon_button.dart';
 import 'package:booking_app/features/filter/pages/filter_screen.dart';
 import 'package:booking_app/features/home/cubit/app_states.dart';
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
-import 'package:sizer/sizer.dart';
 
 class ViewFilterList extends StatelessWidget {
   const ViewFilterList({Key? key}) : super(key: key);
@@ -13,207 +17,132 @@ class ViewFilterList extends StatelessWidget {
     return BlocConsumer<AppCubit, AppStates>(
       listener: (context, state) {},
       builder: (context, state) {
-        var cubit = AppCubit.get(context);
-        Size size = MediaQuery.of(context).size;
         return Scaffold(
+          backgroundColor: AppColors.background,
           body: SafeArea(
-            child: SingleChildScrollView(
-              child: Container(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            icon: Icon(
-                              Icons.arrow_back_ios,
-                              color: Colors.white,
-                            )),
-                        Text(
-                          'View Filter List',
-                          style: TextStyle(
-                              fontSize: 14.sp,
-                              color: OwnTheme.colorPalette['white'],
-                              fontWeight: FontWeight.w500,
-                              fontFamily:
-                                  lang == "ar" ? "fontArBold" : "fontEnBold"),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.screen,
+                      AppSpacing.lg, AppSpacing.screen, AppSpacing.md),
+                  child: Row(
+                    children: [
+                      LuxuryIconButton(
+                        icon: Icons.arrow_back_ios_new_rounded,
+                        semanticLabel: 'Back',
+                        onPressed: () => Navigator.of(context).maybePop(),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Text(
+                          'filter_txt'.tr(context),
+                          style: AppTypography.headingMedium,
                         ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 40,
-                    ),
-                    ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 10),
-                            clipBehavior: Clip.antiAliasWithSaveLayer,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: const Color(0xff282828),
-                                border:
-                                    Border.all(color: const Color(0xff282828))),
-                            height: size.height * .18,
-                            child: Row(
-                              children: [
-                                Image(
-                                  image: NetworkImage(
-                                      'http://api.mahmoudtaha.com/images/${filteredHotelList[index].hotelImages!.first.image}'),
-                                  fit: BoxFit.cover,
-                                  width: size.width * .32,
-                                  height: size.height * .18,
-                                ),
-                                SizedBox(
-                                  width: size.width * .04,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 150,
-                                        child: Text(
-                                          '${filteredHotelList[index].name}',
-                                          style: TextStyle(
-                                              fontSize: 11.sp,
-                                              color: OwnTheme
-                                                  .colorPalette['white'],
-                                              fontWeight: FontWeight.w500,
-                                              fontFamily: lang == "ar"
-                                                  ? "fontArBold"
-                                                  : "fontEnBold"),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: size.height * .008,
-                                      ),
-                                      Container(
-                                        width: 150,
-                                        child: Text(
-                                          '${filteredHotelList[index].address}',
-                                          style: TextStyle(
-                                              fontSize: 10.sp,
-                                              color:
-                                                  OwnTheme.colorPalette['gray'],
-                                              fontWeight: FontWeight.w500,
-                                              fontFamily: lang == "ar"
-                                                  ? "fontArBold"
-                                                  : "fontEnBold"),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: size.height * .01,
-                                      ),
-                                      SizedBox(
-                                        height: size.height * .04,
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.location_pin,
-                                              color: OwnTheme
-                                                  .colorPalette['primary'],
-                                              size: size.width * .04,
-                                            ),
-                                            SizedBox(
-                                              width: size.width * .01,
-                                            ),
-                                            Text(
-                                              '4,0 km to city',
-                                              style: TextStyle(
-                                                  fontSize: 10.sp,
-                                                  color: OwnTheme
-                                                      .colorPalette['gray'],
-                                                  fontWeight: FontWeight.w500,
-                                                  fontFamily: lang == "ar"
-                                                      ? "fontArBold"
-                                                      : "fontEnBold"),
-                                            ),
-                                            SizedBox(
-                                              width: size.width * .07,
-                                            ),
-                                            Text(
-                                              '${filteredHotelList[index].price}',
-                                              style: TextStyle(
-                                                  fontSize: 15.sp,
-                                                  color: OwnTheme
-                                                      .colorPalette['white'],
-                                                  fontWeight: FontWeight.w500,
-                                                  fontFamily: lang == "ar"
-                                                      ? "fontArBold"
-                                                      : "fontEnBold"),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: size.height * .01,
-                                      ),
-                                      SizedBox(
-                                        height: size.height * .03,
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.star,
-                                              color: OwnTheme
-                                                  .colorPalette['primary'],
-                                              size: size.width * .05,
-                                            ),
-                                            Text(
-                                              '${filteredHotelList[index].rate}',
-                                              style: TextStyle(
-                                                  fontSize: 12.sp,
-                                                  color: OwnTheme
-                                                      .colorPalette['white'],
-                                                  fontWeight: FontWeight.w500,
-                                                  fontFamily: lang == "ar"
-                                                      ? "fontArBold"
-                                                      : "fontEnBold"),
-                                            ),
-                                            SizedBox(
-                                              width: size.width * .17,
-                                            ),
-                                            Text(
-                                              '/per night',
-                                              style: TextStyle(
-                                                  fontSize: 9.sp,
-                                                  color: OwnTheme
-                                                      .colorPalette['gray'],
-                                                  fontWeight: FontWeight.w500,
-                                                  fontFamily: lang == "ar"
-                                                      ? "fontArBold"
-                                                      : "fontEnBold"),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
-                          );
-                        },
-                        separatorBuilder: (context, index) {
-                          return const SizedBox(
-                            height: 10,
-                          );
-                        },
-                        itemCount: filteredHotelList.length)
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: filteredHotelList.isEmpty
+                      ? const LuxuryEmptyState(
+                          icon: Icons.search_off_rounded,
+                          title: 'No matches found',
+                          message:
+                              'Try adjusting your address, price range, or facilities to see more stays.',
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(AppSpacing.screen,
+                              AppSpacing.sm, AppSpacing.screen, AppSpacing.xxl),
+                          itemCount: filteredHotelList.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: AppSpacing.md),
+                          itemBuilder: (context, index) =>
+                              _FilterResultCard(hotel: filteredHotelList[index]),
+                        ),
+                ),
+              ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _FilterResultCard extends StatelessWidget {
+  const _FilterResultCard({Key? key, required this.hotel}) : super(key: key);
+
+  final dynamic hotel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AspectRatio(
+              aspectRatio: 0.9,
+              child: Image(
+                image: NetworkImage(
+                    'http://api.mahmoudtaha.com/images/${hotel.hotelImages!.first.image}'),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: AppColors.divider,
+                  child: const Icon(Icons.image_not_supported_outlined,
+                      color: AppColors.textMuted),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${hotel.name}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.sectionTitle,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      '${hotel.address}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.bodyMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      children: [
+                        const Icon(Icons.star_rounded,
+                            size: 18, color: AppColors.accent),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text('${hotel.rate}', style: AppTypography.label),
+                        const Spacer(),
+                        Text(
+                          '\$${hotel.price}',
+                          style: AppTypography.sectionTitle
+                              .copyWith(color: AppColors.accent),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

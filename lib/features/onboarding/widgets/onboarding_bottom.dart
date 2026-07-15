@@ -1,31 +1,30 @@
 import 'package:booking_app/core/localization/setup/app_localization.dart';
-import 'package:booking_app/resources/buttonkey/button.dart';
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
+import 'package:booking_app/core/widgets/luxury_button.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingBottom extends StatelessWidget {
+  const OnboardingBottom({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ButtonKey(
-          function: () {
+        LuxuryButton(
+          label: 'login_btn'.tr(context),
+          icon: Icons.login_rounded,
+          onPressed: () {
             Navigator.pushNamed(context, '/login');
           },
-          buttonText: 'login_btn'.tr(context),
         ),
-        SizedBox(
-          height: space1,
-        ),
-        ButtonKey(
-          buttonText: 'create_account_btn'.tr(context),
-          backgroundColor: OwnTheme.colorPalette['gray'],
-          function: () {
+        const SizedBox(height: 12),
+        LuxuryButton(
+          label: 'create_account_btn'.tr(context),
+          variant: LuxuryButtonVariant.secondary,
+          icon: Icons.person_add_alt_1_rounded,
+          onPressed: () {
             Navigator.pushNamed(context, '/register');
           },
         ),
-
       ],
     );
   }

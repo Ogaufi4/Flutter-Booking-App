@@ -5,7 +5,7 @@ import {logNotification} from "../utils/logger";
 import type {Booking, SendResult} from "../types";
 import {sendAdminBookingAlert, sendCustomerConfirmation} from "./emailService";
 import {sendPush} from "./pushService";
-import {sendBookingAlert} from "./whatsappService";
+import {sendCustomerBookingReceipt, sendOwnerBookingAlert} from "./whatsappService";
 
 /** Owner/staff, resolved from the users collection rather than hardcoded. */
 async function managers() {
@@ -39,18 +39,20 @@ export async function notifyBookingCreated(booking: Booking, bookingId: string):
   // adminEmail is the configured destination; owner/staff addresses back it up.
   const adminEmails = [...new Set([company.adminEmail, ...staff.emails].filter(Boolean))];
 
-  const [customerEmail, adminEmail, adminWhatsapp, managerPush] = await Promise.all([
+  const [customerEmail, adminEmail, customerWhatsapp, adminWhatsapp, managerPush] = await Promise.all([
     sendCustomerConfirmation(booking.email, forCustomer, bookingId)
       .then((r) => record(bookingId, "email", "trigger-email", r)),
     sendAdminBookingAlert(adminEmails, forManagers, bookingId)
       .then((r) => record(bookingId, "email", "trigger-email", r)),
-    sendBookingAlert("NEW BOOKING", booking, bookingId, company.adminWhatsapp)
-      .then((r) => record(bookingId, "whatsapp", "meta", r)),
+    sendCustomerBookingReceipt(booking, bookingId, forCustomer)
+      .then((r) => record(bookingId, "whatsapp", "wasenderapi", r)),
+    sendOwnerBookingAlert("NEW BOOKING", booking, bookingId, company.adminWhatsapp)
+      .then((r) => record(bookingId, "whatsapp", "wasenderapi", r)),
     sendPush(staff.ids, forManagers, bookingId)
       .then((r) => record(bookingId, "push", "fcm", r)),
   ]);
 
-  return {customerEmail, adminEmail, adminWhatsapp, managerPush};
+  return {customerEmail, adminEmail, customerWhatsapp, adminWhatsapp, managerPush};
 }
 
 export async function notifyBookingStatusChanged(
@@ -80,8 +82,8 @@ export async function notifyBookingStatusChanged(
     const [adminEmail, adminWhatsapp, managerPush] = await Promise.all([
       sendAdminBookingAlert(adminEmails, message, bookingId)
         .then((r) => record(bookingId, "email", "trigger-email", r)),
-      sendBookingAlert("BOOKING CANCELLED", booking, bookingId, company.adminWhatsapp)
-        .then((r) => record(bookingId, "whatsapp", "meta", r)),
+      sendOwnerBookingAlert("BOOKING CANCELLED", booking, bookingId, company.adminWhatsapp)
+        .then((r) => record(bookingId, "whatsapp", "wasenderapi", r)),
       sendPush(staff.ids, message, bookingId)
         .then((r) => record(bookingId, "push", "fcm", r)),
     ]);

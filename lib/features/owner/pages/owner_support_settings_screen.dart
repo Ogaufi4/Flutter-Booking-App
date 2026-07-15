@@ -1,17 +1,15 @@
-import 'package:booking_app/resources/themes/theme.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
+import 'package:booking_app/core/widgets/luxury_button.dart';
+import 'package:booking_app/core/widgets/luxury_card.dart';
+import 'package:booking_app/core/widgets/luxury_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-/// Edits the two owner-configurable contact documents:
-///
-/// * settings/support -- the phone and email customers SEE in every booking
-///   notification.
-/// * settings/company -- where owner alerts are SENT (admin email and the
-///   WhatsApp number that receives new-booking alerts).
-///
-/// Both are restricted to owner/staff by firestore.rules.
 class OwnerSupportSettingsScreen extends StatefulWidget {
   const OwnerSupportSettingsScreen({Key? key}) : super(key: key);
+
   @override
   State<OwnerSupportSettingsScreen> createState() =>
       _OwnerSupportSettingsScreenState();
@@ -69,31 +67,37 @@ class _OwnerSupportSettingsScreenState
     try {
       final batch = FirebaseFirestore.instance.batch();
       batch.set(
-          _support,
-          {
-            'phone': _supportPhone.text.trim(),
-            'email': _supportEmail.text.trim(),
-            'updatedAt': FieldValue.serverTimestamp(),
-          },
-          SetOptions(merge: true));
+        _support,
+        {
+          'phone': _supportPhone.text.trim(),
+          'email': _supportEmail.text.trim(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
       batch.set(
-          _company,
-          {
-            'adminWhatsapp': _adminWhatsapp.text.trim(),
-            'adminEmail': _adminEmail.text.trim(),
-            'updatedAt': FieldValue.serverTimestamp(),
-          },
-          SetOptions(merge: true));
+        _company,
+        {
+          'adminWhatsapp': _adminWhatsapp.text.trim(),
+          'adminEmail': _adminEmail.text.trim(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
       await batch.commit();
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Contact settings updated for new bookings')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Contact settings updated for new bookings'),
+        ),
+      );
       Navigator.of(context).pop();
-    } catch (error) {
+    } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not save: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not save contact settings.')),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -113,114 +117,133 @@ class _OwnerSupportSettingsScreenState
     return valid ? null : 'Enter a valid phone number';
   }
 
-  Widget _sectionTitle(String title, String description) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(description,
-              style: TextStyle(color: OwnTheme.colorPalette['gray'])),
-          const SizedBox(height: 14),
-        ],
-      );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Contact settings')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
+          : SafeArea(
+              top: false,
               child: Form(
                 key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screen,
+                    16,
+                    AppSpacing.screen,
+                    32,
+                  ),
                   children: [
-                    _sectionTitle(
-                      'Shown to customers',
-                      'Included in every booking email and notification the '
-                          'customer receives. Leave a field empty to hide it.',
+                    Text('Messaging\ncontacts',
+                        style: AppTypography.displayMedium),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Keep customer-facing support details separate from owner alert destinations.',
+                      style: AppTypography.bodyMedium,
                     ),
-                    TextFormField(
-                      controller: _supportPhone,
-                      keyboardType: TextInputType.phone,
-                      validator: _validatePhone,
-                      decoration: const InputDecoration(
-                        labelText: 'Support phone',
-                        hintText: '+267 71 234 567',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.phone_outlined),
-                      ),
+                    const SizedBox(height: 24),
+                    _SettingsSection(
+                      title: 'Shown to customers',
+                      description:
+                          'Included in booking emails and notifications. Leave a field empty to hide it.',
+                      children: [
+                        LuxuryTextField(
+                          controller: _supportPhone,
+                          label: 'Support phone',
+                          hintText: '+267 71 234 567',
+                          keyboardType: TextInputType.phone,
+                          validator: _validatePhone,
+                          prefixIcon: Icons.phone_outlined,
+                        ),
+                        const SizedBox(height: 16),
+                        LuxuryTextField(
+                          controller: _supportEmail,
+                          label: 'Support email',
+                          hintText: 'support@travel365.co.bw',
+                          keyboardType: TextInputType.emailAddress,
+                          validator: _validateEmail,
+                          prefixIcon: Icons.mail_outline,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _supportEmail,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: _validateEmail,
-                      decoration: const InputDecoration(
-                        labelText: 'Support email',
-                        hintText: 'support@travel365.co.bw',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.mail_outline),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    _sectionTitle(
-                      'Owner alerts',
-                      'Where new-booking and cancellation alerts are sent. '
-                          'Customers never see these. Leave a field empty to use '
-                          'the default (72184392 / ogaufimokopakgosi3@gmail.com).',
-                    ),
-                    TextFormField(
-                      controller: _adminWhatsapp,
-                      keyboardType: TextInputType.phone,
-                      validator: _validatePhone,
-                      decoration: const InputDecoration(
-                        labelText: 'Owner WhatsApp number',
-                        hintText: '72184392',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.chat_outlined),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _adminEmail,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: _validateEmail,
-                      decoration: const InputDecoration(
-                        labelText: 'Owner alert email',
-                        hintText: 'ogaufimokopakgosi3@gmail.com',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.alternate_email),
-                      ),
+                    const SizedBox(height: 18),
+                    _SettingsSection(
+                      title: 'Owner alerts',
+                      description:
+                          'Where new-booking and cancellation alerts are sent. Customers never see these.',
+                      children: [
+                        LuxuryTextField(
+                          controller: _adminWhatsapp,
+                          label: 'Owner WhatsApp number',
+                          hintText: '72184392',
+                          keyboardType: TextInputType.phone,
+                          validator: _validatePhone,
+                          prefixIcon: Icons.chat_outlined,
+                        ),
+                        const SizedBox(height: 16),
+                        LuxuryTextField(
+                          controller: _adminEmail,
+                          label: 'Owner alert email',
+                          hintText: 'owner@travel365.co.bw',
+                          keyboardType: TextInputType.emailAddress,
+                          validator: _validateEmail,
+                          prefixIcon: Icons.alternate_email,
+                        ),
+                      ],
                     ),
                     if (_loadError != null) ...[
                       const SizedBox(height: 16),
-                      Text('Could not load current settings: $_loadError',
-                          style: const TextStyle(color: Colors.red)),
-                    ],
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: _saving ? null : _save,
-                        icon: _saving
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(Icons.save_outlined),
-                        label: Text(_saving ? 'Saving...' : 'Save settings'),
+                      Text(
+                        'Current settings could not be loaded.',
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.error,
+                        ),
                       ),
+                    ],
+                    const SizedBox(height: 26),
+                    LuxuryButton(
+                      label: _saving ? 'Saving...' : 'Save settings',
+                      icon: Icons.save_outlined,
+                      isLoading: _saving,
+                      onPressed: _saving ? null : _save,
                     ),
                   ],
                 ),
               ),
             ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({
+    required this.title,
+    required this.description,
+    required this.children,
+  });
+
+  final String title;
+  final String description;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LuxuryCard(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: AppTypography.sectionTitle),
+          const SizedBox(height: 6),
+          Text(description, style: AppTypography.caption),
+          const SizedBox(height: 18),
+          ...children,
+        ],
+      ),
     );
   }
 }

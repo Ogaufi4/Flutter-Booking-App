@@ -18,7 +18,7 @@ async function queue(to: string[], message: ChannelMessage, bookingId: string): 
       to: unique,
       message: {
         subject: message.subject,
-        html: emailHtml(message.heading, message.body, bookingId),
+        html: emailHtml(message.heading, message.receiptBody ?? message.body, bookingId),
       },
       createdAt: FieldValue.serverTimestamp(),
     };

@@ -142,3 +142,7 @@ google-services*.json
 # Stale build output directories
 build-stale-*/
 
+
+# Root env (never commit; functions/.env already covered above)
+/.env
+.env

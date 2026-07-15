@@ -1,7 +1,8 @@
 import 'package:booking_app/core/localization/setup/app_localization.dart';
-import 'package:booking_app/resources/buttonkey/button.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
+import 'package:booking_app/core/widgets/luxury_button.dart';
 import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -12,11 +13,10 @@ class BottomController extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ButtonKey(
-          buttonText: 'get_started_btn'.tr(context),
-          radius: 8,
-          padding: const EdgeInsets.symmetric(vertical: 17),
-          function: () {
+        LuxuryButton(
+          label: 'get_started_btn'.tr(context),
+          icon: Icons.luggage_rounded,
+          onPressed: () {
             Navigator.pushNamed(context, '/onboarding');
           },
         ),
@@ -26,15 +26,12 @@ class BottomController extends StatelessWidget {
             children: [
               TextSpan(
                 text: '${'have_account_txt'.tr(context)} ',
-                style: OwnTheme.smallTextStyle(lang: lang).copyWith(
-                  color: OwnTheme.colorPalette['gray'],
-                ),
+                style: AppTypography.bodyMedium
+                    .copyWith(color: AppColors.textSecondary),
               ),
               TextSpan(
                 text: 'login_btn'.tr(context),
-                style: OwnTheme.smallBoldTextStyle(lang: lang).copyWith(
-                  color: OwnTheme.colorPalette['secondary'],
-                ),
+                style: AppTypography.button.copyWith(color: AppColors.primary),
                 recognizer: TapGestureRecognizer()
                   ..onTap = () => Navigator.pushNamed(context, '/login'),
               ),

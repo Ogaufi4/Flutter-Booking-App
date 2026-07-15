@@ -1,3 +1,4 @@
+import 'package:booking_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 String bookingStatusLabel(String status) {
@@ -22,16 +23,16 @@ String bookingStatusLabel(String status) {
 Color bookingStatusColor(String status) {
   switch (status == 'submitted' ? 'new' : status) {
     case 'approved':
-      return const Color(0xFF18794E);
+      return AppColors.success;
     case 'completed':
-      return const Color(0xFF3157A4);
+      return AppColors.primarySoft;
     case 'declined':
     case 'cancelled':
-      return const Color(0xFFB42318);
+      return AppColors.error;
     case 'reviewing':
-      return const Color(0xFF8A5A00);
+      return AppColors.accent;
     default:
-      return const Color(0xFFE46225);
+      return AppColors.accent;
   }
 }
 

@@ -1,195 +1,174 @@
 import 'package:booking_app/core/main_blocs/blocs.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
+import 'package:booking_app/core/widgets/luxury_card.dart';
+import 'package:booking_app/core/widgets/luxury_empty_state.dart';
+import 'package:booking_app/data/models/search_model.dart' as search;
+import 'package:booking_app/features/bookings/pages/book_trip_screen.dart';
 import 'package:booking_app/features/home/cubit/app_states.dart';
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
-import 'package:sizer/sizer.dart';
 
 class ViewSearchResult extends StatelessWidget {
-  const ViewSearchResult({Key? key}) : super(key: key);
+  const ViewSearchResult({Key? key, this.query = ''}) : super(key: key);
+
+  final String query;
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AppCubit,AppStates>(
-        listener: (context,state){
+    return BlocConsumer<AppCubit, AppStates>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        final results =
+            AppCubit.get(context).searchModel?.data?.data ?? <search.Datum>[];
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            leading: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_rounded),
+            ),
+            title: const Text('Search Results'),
+          ),
+          body: results.isEmpty
+              ? LuxuryEmptyState(
+                  icon: Icons.search_off_rounded,
+                  title: 'No stays found',
+                  message: query.isEmpty
+                      ? 'Try another city, hotel or travel idea.'
+                      : 'No stays matched "$query". Try another search.',
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screen,
+                    14,
+                    AppSpacing.screen,
+                    32,
+                  ),
+                  itemCount: results.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 14),
+                  itemBuilder: (context, index) {
+                    final item = results[index];
+                    return _SearchResultCard(result: item);
+                  },
+                ),
+        );
+      },
+    );
+  }
+}
 
-        },
-      builder: (context,state){
-          var cubit=AppCubit.get(context);
-          Size size = MediaQuery.of(context).size;
-          return Scaffold(
-            body: SafeArea(
-              child: SingleChildScrollView(
-                child: Container(
-                  child: Column(
+class _SearchResultCard extends StatelessWidget {
+  const _SearchResultCard({required this.result});
+  final search.Datum result;
+
+  @override
+  Widget build(BuildContext context) {
+    return LuxuryCard(
+      padding: EdgeInsets.zero,
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BookTripScreen(
+            initialDestination: result.name ?? '',
+            initialService: 'accommodation',
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.horizontal(
+              left: Radius.circular(AppRadius.card),
+            ),
+            child: _NetworkPhoto(url: _image(result), width: 118, height: 138),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    result.name ?? 'Travel365 stay',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.sectionTitle,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    result.address ?? 'Curated location',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.caption,
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          IconButton(onPressed: (){
-                             Navigator.pop(context);
-                          },
-                              icon: Icon(
-                                  Icons.arrow_back_ios,
-                                color: Colors.white,
-                              )
-                          ),
-                          Text(
-                            'View Search Result',
-                            style: TextStyle(
-                                fontSize: 14.sp,
-                                color:  OwnTheme.colorPalette['white'],
-                                fontWeight: FontWeight.w500,
-                                fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                            ),
-                          ),
-                        ],
+                      const Icon(Icons.star_rounded,
+                          color: AppColors.accent, size: 17),
+                      const SizedBox(width: 4),
+                      Text(result.rate ?? '4.9', style: AppTypography.caption),
+                      const Spacer(),
+                      Text(
+                        'P ${result.price ?? '-'}',
+                        style: AppTypography.label,
                       ),
-                      SizedBox(height: 40,),
-                      ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (context,index){
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 10),
-                              clipBehavior: Clip.antiAliasWithSaveLayer,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: const Color(0xff282828),
-                                  border: Border.all(
-                                      color: const Color(0xff282828)
-                                  )
-                              ),
-                              height: size.height*.18,
-                              child: Row(
-                                children: [
-                                  Image(
-                                    image: NetworkImage(
-                                        'http://api.mahmoudtaha.com/images/${cubit.searchModel!.data!.data![index].hotelImages![0].image}'
-                                    ),
-                                    fit: BoxFit.cover,
-                                    width: size.width*.32,
-                                    height: size.height*.18,
-                                  ),
-                                  SizedBox(width: size.width*.04,),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: 150,
-                                          child: Text(
-                                            '${cubit.searchModel!.data!.data![index].name}',
-                                            style: TextStyle(
-                                                fontSize: 11.sp,
-                                                color:  OwnTheme.colorPalette['white'],
-                                                fontWeight: FontWeight.w500,
-                                                fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-
-                                          ),
-
-                                        ),
-                                        SizedBox(height: size.height*.008,),
-                                        Container(
-                                          width: 150,
-                                          child: Text(
-                                            '${cubit.searchModel!.data!.data![index].address}',
-                                            style: TextStyle(
-                                                fontSize: 10.sp,
-                                                color:  OwnTheme.colorPalette['gray'],
-                                                fontWeight: FontWeight.w500,
-                                                fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        SizedBox(height: size.height*.01,),
-                                        SizedBox(
-                                          height: size.height*.04,
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.location_pin,
-                                                color:  OwnTheme.colorPalette['primary'],
-                                                size:  size.width*.04,
-                                              ),
-                                              SizedBox(width: size.width*.01,),
-                                              Text(
-                                                '4,0 km to city',
-                                                style: TextStyle(
-                                                    fontSize: 10.sp,
-                                                    color:  OwnTheme.colorPalette['gray'],
-                                                    fontWeight: FontWeight.w500,
-                                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                                ),
-                                              ),
-                                              SizedBox(width: size.width*.07,),
-                                              Text(
-                                                '${cubit.searchModel!.data!.data![index].price}',
-                                                style: TextStyle(
-                                                    fontSize: 15.sp,
-                                                    color:  OwnTheme.colorPalette['white'],
-                                                    fontWeight: FontWeight.w500,
-                                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                                ),
-                                              ),
-
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(height: size.height*.01,),
-                                        SizedBox(
-                                          height: size.height*.03,
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.star,
-                                                color:  OwnTheme.colorPalette['primary'],
-                                                size:  size.width*.05,
-                                              ),
-                                              Text(
-                                                '${cubit.searchModel!.data!.data![index].rate}',
-                                                style: TextStyle(
-                                                    fontSize: 12.sp,
-                                                    color:  OwnTheme.colorPalette['white'],
-                                                    fontWeight: FontWeight.w500,
-                                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                                ),
-                                              ),
-                                              SizedBox(width: size.width*.17,),
-                                              Text(
-                                                '/per night',
-                                                style: TextStyle(
-                                                    fontSize: 9.sp,
-                                                    color:  OwnTheme.colorPalette['gray'],
-                                                    fontWeight: FontWeight.w500,
-                                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                                ),
-                                              ),
-
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                            );
-                          },
-                          separatorBuilder: (context,index){
-                            return const SizedBox(height: 10,);
-                          },
-                          itemCount: 1
-                      )
                     ],
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Text('/per night', style: AppTypography.caption),
+                ],
               ),
             ),
-          );
-      },
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _image(search.Datum result) {
+    final image = result.hotelImages?.isNotEmpty == true
+        ? result.hotelImages!.first.image
+        : null;
+    if (image == null || image.isEmpty) return '';
+    if (image.startsWith('http')) return image;
+    return 'http://api.mahmoudtaha.com/images/$image';
+  }
+}
+
+class _NetworkPhoto extends StatelessWidget {
+  const _NetworkPhoto({
+    required this.url,
+    required this.width,
+    required this.height,
+  });
+
+  final String url;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    if (url.isEmpty) {
+      return Image.asset(
+        'assets/images/hotel.jpg',
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.network(
+      url,
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        'assets/images/hotel.jpg',
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      ),
     );
   }
 }

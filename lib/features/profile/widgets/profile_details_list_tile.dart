@@ -1,8 +1,8 @@
-import 'package:booking_app/core/main_blocs/blocs.dart';
-import 'package:booking_app/core/utils/extensions/theme_extensions.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
 import 'package:booking_app/core/utils/widgets/TextBoxNormal.dart';
 import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
 import 'package:flutter/material.dart';
 
 class ProfileDetailsListTile extends StatelessWidget {
@@ -21,45 +21,40 @@ class ProfileDetailsListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(vertical: space2),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                flex: 2,
-                child: Text(
-                  keyy,
-                  style: OwnTheme.smallBoldTextStyle(lang: lang)
-                      .colorChange(color: 'gray'),
-                ),
-              ),
-              Expanded(
-                flex: editMode ? 2 : 0,
-                child: editMode
-                    ? CustomTextBoxNormal(
-                        lang: lang,
-                        tec: tec,
-                        onChange: onChange,
-                      )
-                    : Text(
-                        value,
-                        style: OwnTheme.smallBoldTextStyle(lang: lang)
-                            .colorChange(color: 'white'),
-                      ),
-              ),
-            ],
-          ),
-          decoration: BoxDecoration(
-              border: Border(
-                  bottom: BorderSide(
-                      width: 0.5,
-                      color: OwnTheme.colorPalette['gray']!,
-                      style: BorderStyle.solid))),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.divider),
         ),
-      ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              keyy,
+              style: AppTypography.caption,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            flex: editMode ? 3 : 2,
+            child: editMode
+                ? CustomTextBoxNormal(
+                    lang: lang,
+                    tec: tec,
+                    onChange: onChange,
+                  )
+                : Text(
+                    value,
+                    textAlign: TextAlign.end,
+                    style: AppTypography.label,
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -25,3 +25,10 @@ export const metaTemplateLanguage = defineString("META_TEMPLATE_LANGUAGE", {defa
 export const metaCountryCode = defineString("META_COUNTRY_CODE", {default: "267"});
 // Secret Manager, never .env and never the repo.
 export const metaAccessToken = defineSecret("META_ACCESS_TOKEN");
+
+export const wasenderEnabled = defineBoolean("WASENDER_ENABLED", {default: true});
+export const wasenderApiUrl = defineString("WASENDER_API_URL", {
+  default: "https://www.wasenderapi.com/api/send-message",
+});
+export const wasenderCountryCode = defineString("WASENDER_COUNTRY_CODE", {default: "267"});
+export const wasenderApiToken = defineSecret("WASENDER_API_TOKEN");

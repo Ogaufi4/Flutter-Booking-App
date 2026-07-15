@@ -1,4 +1,7 @@
-import 'package:booking_app/resources/themes/theme.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
+import 'package:booking_app/core/widgets/luxury_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -12,81 +15,71 @@ class AppBasicInfo extends StatelessWidget {
         const SizedBox(height: 32),
         SvgPicture.asset(
           'assets/images/travel365_logo.svg',
-          width: 230,
+          width: 172,
           semanticsLabel: 'Travel365 logo',
         ),
-        const SizedBox(height: 44),
-        Container(
+        const SizedBox(height: 36),
+        SizedBox(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
-          decoration: BoxDecoration(
-            color: OwnTheme.colorPalette['surfaceAlt'],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: OwnTheme.colorPalette['border']!),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF3EC),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: OwnTheme.colorPalette['primary']!,
-                    width: 2,
-                  ),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Icon(
-                      Icons.flight_takeoff_rounded,
-                      color: OwnTheme.colorPalette['secondary'],
-                      size: 34,
+          child: LuxuryCard(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 30),
+            child: Column(
+              children: [
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    color: AppColors.accentSoft,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.border,
+                      width: 1,
                     ),
-                    Positioned(
-                      right: 8,
-                      bottom: 8,
-                      child: Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: OwnTheme.colorPalette['primary'],
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: 14,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      const Icon(
+                        Icons.flight_takeoff_rounded,
+                        color: AppColors.primary,
+                        size: 34,
+                      ),
+                      Positioned(
+                        right: 8,
+                        bottom: 8,
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: AppColors.accent,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 22),
-              Text(
-                'Your journey, thoughtfully arranged.',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: OwnTheme.colorPalette['secondary'],
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Book flights, stays, car rentals and personalised trips '
-                'with Travel365.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: OwnTheme.colorPalette['gray'],
-                      height: 1.5,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: 22),
+                const Text(
+                  'Your journey, thoughtfully arranged.',
+                  style: AppTypography.displayMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Book flights, stays, car rentals and personalised trips '
+                  'with Travel365.',
+                  style: AppTypography.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 28),
@@ -133,20 +126,20 @@ class _ServiceItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: OwnTheme.colorPalette['border']!),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.medium),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
-          Icon(icon, color: OwnTheme.colorPalette['secondary'], size: 24),
+          Icon(icon, color: AppColors.primary, size: 24),
           const SizedBox(height: 8),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: OwnTheme.colorPalette['secondary'],
-                  fontWeight: FontWeight.w600,
-                ),
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),

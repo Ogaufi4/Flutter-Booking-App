@@ -38,9 +38,10 @@ class NotificationService {
     FirebaseMessaging.onMessage.listen(_showForeground);
     FirebaseMessaging.onMessageOpenedApp.listen(_openFromMessage);
     final initial = await FirebaseMessaging.instance.getInitialMessage();
-    if (initial != null)
+    if (initial != null) {
       Future<void>.delayed(
           const Duration(milliseconds: 800), () => _openFromMessage(initial));
+    }
     authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) registerCurrentDevice();
     });
@@ -48,16 +49,16 @@ class NotificationService {
         .listen((_) => registerCurrentDevice());
   }
 
-  Future<void> registerCurrentDevice() async {
+  Future<bool> registerCurrentDevice() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) return false;
     final settings = await FirebaseMessaging.instance
         .requestPermission(alert: true, badge: true, sound: true);
     final status = settings.authorizationStatus;
     final granted = status == AuthorizationStatus.authorized ||
         status == AuthorizationStatus.provisional;
     final token = await FirebaseMessaging.instance.getToken();
-    if (token == null) return;
+    if (token == null) return false;
     // FCM issues a token even when the user denies notification permission, so
     // the grant -- not the token -- decides whether the backend may target this
     // device. Re-writing `enabled` on every call also disables devices whose
@@ -73,6 +74,41 @@ class NotificationService {
       'enabled': granted,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+    return granted;
+  }
+
+  Future<bool> currentDeviceEnabled() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null) return false;
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('devices')
+        .doc(token.hashCode.toUnsigned(32).toString())
+        .get();
+    return snapshot.data()?['enabled'] == true;
+  }
+
+  Future<bool> setCurrentDeviceEnabled(bool enabled) async {
+    if (enabled) return registerCurrentDevice();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null) return false;
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('devices')
+        .doc(token.hashCode.toUnsigned(32).toString())
+        .set({
+      'token': token,
+      'platform': defaultTargetPlatform.name,
+      'enabled': false,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    return false;
   }
 
   Future<void> _showForeground(RemoteMessage message) async {

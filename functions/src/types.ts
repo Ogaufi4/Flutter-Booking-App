@@ -15,7 +15,13 @@ export type SupportContact = {phone: string; email: string};
 /** Where owner/admin alerts are SENT. Owner-editable. */
 export type CompanySettings = {agencyName: string; adminEmail: string; adminWhatsapp: string};
 
-export type ChannelMessage = {title: string; subject: string; heading: string; body: string};
+export type ChannelMessage = {
+  title: string;
+  subject: string;
+  heading: string;
+  body: string;
+  receiptBody?: string;
+};
 
 export type SendResult = {sent: boolean; recipient: string; error?: string; messageId?: string};
 

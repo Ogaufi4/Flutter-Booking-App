@@ -1,16 +1,22 @@
-import 'package:booking_app/core/localization/setup/app_localization.dart';
 import 'package:booking_app/core/main_blocs/blocs.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
+import 'package:booking_app/core/widgets/luxury_card.dart';
+import 'package:booking_app/core/widgets/luxury_empty_state.dart';
+import 'package:booking_app/core/widgets/luxury_icon_button.dart';
 import 'package:booking_app/data/models/explore_model.dart';
-import 'package:booking_app/features/book_hotel.dart';
+import 'package:booking_app/features/filter/pages/filter_screen.dart';
+import 'package:booking_app/features/hotel_details/hotel_details.dart';
 import 'package:booking_app/features/home/cubit/app_states.dart';
 import 'package:booking_app/features/search_screen/search_screen.dart';
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
-import 'package:sizer/sizer.dart';
 
 class ExploreScreen extends StatefulWidget {
-   ExploreScreen({Key? key}) : super(key: key);
-  var searchController=TextEditingController();
+  ExploreScreen({Key? key}) : super(key: key);
+
+  final searchController = TextEditingController();
+
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
 }
@@ -18,474 +24,353 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
-    Size size=MediaQuery.of(context).size;
-    return  BlocConsumer<AppCubit,AppStates>(
-        listener: (context,state){
-
-        },
-      builder: (context,state){
-          var cubit=AppCubit.get(context);
-          return  cubit.exploreModel!=null?
-          Scaffold(
-            backgroundColor: Color(0xff191919),
-            appBar: AppBar(
-              leading: IconButton(
-                onPressed: (){
-                  Navigator.pop(context);
-                },
-                icon: Icon(
-                  Icons.arrow_back_ios,
-                  color: Colors.white,
-                ),
-              ),
-              centerTitle: true,
-              actions: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.favorite_border,
-                    color: Colors.white,
-                  ),
-                  onPressed: (){},
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.map_outlined,
-                    color: Colors.white,
-                  ),
-                  onPressed: (){
-
-                    Navigator.pushNamed(context, '/map');
-                  },
-                ),
-
-              ],
-              backgroundColor: Color(0xff191919),
-              title:  Text(
-                'explore'.tr(context),
-                style: TextStyle(
-                    fontSize: 16.sp,
-                    color:  OwnTheme.colorPalette['white'],
-                    fontWeight: FontWeight.w700,
-                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                ),
-              ),
+    return BlocConsumer<AppCubit, AppStates>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        final cubit = AppCubit.get(context);
+        final model = cubit.exploreModel;
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            leading: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_rounded),
             ),
-            body: SingleChildScrollView(
-              child: Container(
-                child: Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: 10,
-                      ),
-                      padding: EdgeInsets.all(10),
-                      height: size.height*.11,
-                      width: double.infinity,
-                      child: Row(
-                        children: [
-
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (_){
-                                  return SearchScreen();
-                                }));
-                              },
-                              child: TextFormField(
-                                enabled: false,
-                                // controller: widget.searchController,
-                                keyboardType: TextInputType.text,
-                                onFieldSubmitted: (String value) {
-                                  print(value);
-                                },
-                                onChanged: (String value) {
-                                  print(value);
-                                },
-                                style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                                decoration: InputDecoration(
-
-                                  hintStyle: TextStyle(
-                                      fontSize: 11.sp,
-                                      color:  Colors.grey[100],
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                  ),
-                                  hintText: 'London..',
-                                  filled: true,
-                                  fillColor: const Color(0xff282828),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xff191919),
-                                    ),
-                                  ),
-                                  focusedBorder:  OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xff191919),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 10,),
-                          GestureDetector(
-                            onTap: (){
-                              // AppCubit.get(context).getSearchBooking(name: widget.searchController.text);
-                            },
-                            child: CircleAvatar(
-                              radius: 30,
-                              child: Icon(
-                                Icons.search,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-
-                        ],
-                      ),
-                    ),
-                    Container(
-                      // margin: const EdgeInsets.symmetric(
-                      //   horizontal: 10,
-                      //   vertical: 10
-                      // ),
-                      padding: EdgeInsets.all(10),
-                      height: size.height*.11,
-                      width: double.infinity,
-                      child: Row(
-                        children: [
-                          Expanded(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'choose_date'.tr(context),
-                                    style: TextStyle(
-                                        fontSize: 10.sp,
-                                        color:  Colors.grey,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: "fontEnBold"
-                                    ),
-                                  ),
-                                  SizedBox(height: 10,),
-                                  Text(
-                                    '27, Sep - 02, Oct',
-                                    style: TextStyle(
-                                        fontSize: 11.sp,
-                                        color:  Colors.white,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: "fontEnBold"
-                                    ),
-                                  ),
-                                ],
-                              )
-                          ),
-                          SizedBox(width: 5,),
-                          Container(
-                            width: 1,
-                            height: 60,
-                            color: Colors.grey.shade300,
-                          ),
-                          SizedBox(width: 5,),
-                          Expanded(
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'number_of_rooms'.tr(context),
-                                    style: TextStyle(
-                                        fontSize: 10.sp,
-                                        color:  Colors.grey,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: "fontEn"
-                                    ),
-                                  ),
-                                  SizedBox(height: 10,),
-                                  Text(
-                                    '1 Room 2 People',
-                                    style: TextStyle(
-                                        fontSize: 11.sp,
-                                        color:  Colors.white,
-                                        fontWeight: FontWeight.w400,
-                                        fontFamily: "fontEnBold"
-                                    ),
-                                  ),
-                                ],
-                              )
-                          ),
-                        ],
-                      ),
-                    ),
-                    Divider(
-                      color: Colors.grey,
-                    ),
-                    Container(
-                      margin: EdgeInsets.symmetric(
-                          horizontal: 20
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            '${AppCubit.get(context).exploreModel!.data!.total}',
-                            style: TextStyle(
-                                fontSize: 10.sp,
-                                color:  Colors.white,
-                                fontWeight: FontWeight.w400,
-                                fontFamily: "fontEnBold"
-                            ),
-                          ),
-                          SizedBox(width: 5,),
-                          Text(
-                            'hotel_found'.tr(context),
-                            style: TextStyle(
-                                fontSize: 11.sp,
-                                color:  Colors.white,
-                                fontWeight: FontWeight.w400,
-                                fontFamily: "fontEnBold"
-                            ),
-                          ),
-                          Spacer(),
-                          Text(
-                            'filter'.tr(context),
-                            style: TextStyle(
-                                fontSize: 10.sp,
-                                color:  Colors.white,
-                                fontWeight: FontWeight.w400,
-                                fontFamily: "fontEnBold"
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.sort,
-                              color: OwnTheme.colorPalette['primary'],
-                            ),
-                            onPressed: (){
-                              Navigator.pushNamed(context, '/filter');
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    buildUpComingWidget(context , size,cubit.exploreModel!)
-                  ],
-                ),
+            title: const Text('Explore stays'),
+            actions: [
+              IconButton(
+                onPressed: () => Navigator.pushNamed(context, '/map'),
+                icon: const Icon(Icons.map_outlined),
               ),
-            ),
-          ):
-              Center(
-                child: CircularProgressIndicator(
-                  color: OwnTheme.colorPalette['primary'],
-                ),
-              );
+              const SizedBox(width: 8),
+            ],
+          ),
+          body: model == null
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+              : _ExploreContent(model: model, cubit: cubit),
+        );
       },
     );
   }
+}
 
-  Widget buildUpComingWidget(context , size , ExploreModel model){
+class _ExploreContent extends StatelessWidget {
+  const _ExploreContent({required this.model, required this.cubit});
 
-    return ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context,index){
-          return GestureDetector(
-            onTap: (){
-              print('sssssssssssi');
-              print(model.data!.data![index].id);
-              Navigator.push(context, MaterialPageRoute(builder: (_){
-                 return BookHotel(
-                   hotelName: (model.data!.data![index].name)!,
-                   hotelId: (model.data!.data![index].id)!,
-                 );
-              }));
-            },
-            child: Container(
-              margin: const EdgeInsets.symmetric(
-                  horizontal: 10
+  final ExploreModel model;
+  final AppCubit cubit;
+
+  @override
+  Widget build(BuildContext context) {
+    final hotels = model.data?.data ?? <Datum>[];
+    if (hotels.isEmpty) {
+      return const LuxuryEmptyState(
+        icon: Icons.hotel_outlined,
+        title: 'No stays found',
+        message: 'Try another destination or adjust your search filters.',
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        14,
+        AppSpacing.screen,
+        32,
+      ),
+      children: [
+        _ExploreSearch(onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SearchScreen()),
+          );
+        }),
+        const SizedBox(height: 22),
+        LuxuryCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: _MetaTile(
+                  label: 'Choose date',
+                  value: '27 Sep - 02 Oct',
+                ),
               ),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 10
+              Container(width: 1, height: 38, color: AppColors.divider),
+              Expanded(
+                child: _MetaTile(
+                  label: 'Rooms',
+                  value: '1 Room - 2 People',
+                ),
               ),
-              child: Column(
-                children: [
-                  Container(
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: const Color(0xff282828),
-                        border: Border.all(
-                            color: const Color(0xff282828)
-                        )
-                    ),
-                    child: Column(
-                      children: [
-                        Stack(
-                          children: [
-                            Image(
-                              image: NetworkImage(
-                                  'http://api.mahmoudtaha.com/images/${model.data!.data![index].hotelImages![0].image}'
-                              ),
-                              fit: BoxFit.cover,
-                              width: size.width,
-                              height: size.height*.18,
-                            ),
-                            Positioned(
-                              right: 10,
-                              child: IconButton(
-                                icon:  CircleAvatar(
-                                  radius: 28,
-                                  backgroundColor: Color(0xff282828),
-                                  child: AppCubit.get(context).exploreValues[index]==false? Icon(
-                                    Icons.favorite_border,
-                                    size: 20,
-                                    color: OwnTheme.colorPalette['primary'],
-                                  ):Icon(
-                                    Icons.favorite,
-                                    size: 20,
-                                    color: OwnTheme.colorPalette['primary'],
-                                  ),
-                                ),
-                                onPressed: (){
-                                  setState(() {
-                                    AppCubit.get(context).exploreValues[index] =!AppCubit.get(context).exploreValues[index];
-
-                                  });
-                                  AppCubit.get(context).insertDatabase(
-                                      name: '${model.data!.data![index].name}',
-                                      address: '${model.data!.data![index].address}',
-                                      price: '${model.data!.data![index].price}',
-                                      rate: '${model.data!.data![index].rate}',
-                                      image: '${model.data!.data![index].hotelImages![0].image}'
-                                  );
-                                },
-                              ),
-                            )
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 230,
-                                child: Text(
-                                  '${model.data!.data![index].name}',
-                                  style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color:  OwnTheme.colorPalette['white'],
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: size.width*.04,),
-                              Text(
-                                '\$${model.data!.data![index].price}',
-                                style: TextStyle(
-                                    fontSize: 14.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8
-                          ),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 120,
-                                child: Text(
-                                  '${model.data!.data![index].address}',
-                                  style: TextStyle(
-                                      fontSize: 10.sp,
-                                      color:  OwnTheme.colorPalette['white'],
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-
-                                ),
-                              ),
-                              Icon(
-                                Icons.location_pin,
-                                color:  OwnTheme.colorPalette['primary'],
-                                size:  size.width*.04,
-                              ),
-                              Text(
-                                '4,0 km to city',
-                                style: TextStyle(
-                                    fontSize: 10.sp,
-                                    color:  OwnTheme.colorPalette['gray'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              const Spacer(),
-                              Text(
-                                '/per night ',
-                                style: TextStyle(
-                                    fontSize: 10.sp,
-                                    color:  OwnTheme.colorPalette['gray'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-                              SizedBox(width: size.width*.01,),
-
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.star,
-                                color:  OwnTheme.colorPalette['primary'],
-                                size:  size.width*.06,
-                              ),
-                              SizedBox(width: size.width*.02,),
-                              Text(
-                                '${model.data!.data![index].rate}',
-                                style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color:  OwnTheme.colorPalette['white'],
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: lang == "ar" ? "fontArBold" : "fontEnBold"
-                                ),
-                              ),
-
-                            ],
-                          ),
-                        ),
-
-                      ],
-                    ),
-                  )
-
-                ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 26),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '${model.data?.total ?? hotels.length} stays found',
+                style: AppTypography.sectionTitle,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => FilterScreen()),
+              ),
+              icon: const Icon(Icons.tune_rounded, size: 18),
+              label: const Text('Filter'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.accent),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...List.generate(hotels.length, (index) {
+          final hotel = hotels[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 18),
+            child: _HotelCard(
+              hotel: hotel,
+              selected: index < cubit.exploreValues.length
+                  ? cubit.exploreValues[index]
+                  : false,
+              onFavorite: () {
+                if (index < cubit.exploreValues.length) {
+                  cubit.exploreValues[index] = !cubit.exploreValues[index];
+                }
+                cubit.insertDatabase(
+                  name: hotel.name ?? '',
+                  address: hotel.address ?? '',
+                  price: hotel.price ?? '',
+                  rate: hotel.rate ?? '',
+                  image: hotel.hotelImages?.isNotEmpty == true
+                      ? hotel.hotelImages!.first.image ?? ''
+                      : '',
+                );
+              },
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HotelDetailsScreen(model: hotel),
+                ),
               ),
             ),
           );
-        },
-        separatorBuilder: (context,index){
-          return const SizedBox(height: 10,);
-        },
-        itemCount: model.data!.data!.length
+        }),
+      ],
     );
-
-
   }
+}
+
+class _ExploreSearch extends StatelessWidget {
+  const _ExploreSearch({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.medium),
+      onTap: onTap,
+      child: Container(
+        height: 58,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.medium),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.search_rounded, color: AppColors.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Search hotels, cities or stays',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MetaTile extends StatelessWidget {
+  const _MetaTile({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: AppTypography.caption),
+          const SizedBox(height: 5),
+          Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+            style: AppTypography.label,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HotelCard extends StatelessWidget {
+  const _HotelCard({
+    required this.hotel,
+    required this.onTap,
+    required this.onFavorite,
+    required this.selected,
+  });
+
+  final Datum hotel;
+  final VoidCallback onTap;
+  final VoidCallback onFavorite;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return LuxuryCard(
+      padding: EdgeInsets.zero,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppRadius.card),
+                ),
+                child: _NetworkPhoto(
+                  url: _hotelImage(hotel),
+                  height: 190,
+                  width: double.infinity,
+                ),
+              ),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: LuxuryIconButton(
+                  icon: selected
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  color: selected ? AppColors.accent : AppColors.primary,
+                  semanticLabel: 'Save stay',
+                  onPressed: onFavorite,
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        hotel.name ?? 'Travel365 stay',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.sectionTitle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'P ${hotel.price ?? '-'}',
+                      style: AppTypography.sectionTitle,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on_outlined,
+                        size: 17, color: AppColors.accent),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        hotel.address ?? 'Curated location',
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Icon(Icons.star_rounded,
+                        size: 17, color: AppColors.accent),
+                    const SizedBox(width: 4),
+                    Text(hotel.rate ?? '4.9', style: AppTypography.caption),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text('/per night', style: AppTypography.caption),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NetworkPhoto extends StatelessWidget {
+  const _NetworkPhoto({
+    required this.url,
+    required this.height,
+    required this.width,
+  });
+
+  final String url;
+  final double height;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    if (url.isEmpty) {
+      return Image.asset(
+        'assets/images/hotel.jpg',
+        height: height,
+        width: width,
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.network(
+      url,
+      height: height,
+      width: width,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        'assets/images/hotel.jpg',
+        height: height,
+        width: width,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+}
+
+String _hotelImage(Datum hotel) {
+  final image = hotel.hotelImages?.isNotEmpty == true
+      ? hotel.hotelImages!.first.image
+      : null;
+  if (image == null || image.isEmpty) return '';
+  if (image.startsWith('http')) return image;
+  return 'http://api.mahmoudtaha.com/images/$image';
 }

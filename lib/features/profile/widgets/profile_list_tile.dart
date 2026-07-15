@@ -1,7 +1,8 @@
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
+import 'package:booking_app/core/widgets/luxury_card.dart';
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
 
 class ProfileListTile extends StatelessWidget {
   final String? text;
@@ -13,37 +14,44 @@ class ProfileListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: OwnTheme.colorPalette['surface'],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: OwnTheme.colorPalette['border']!),
-      ),
-      child: ListTile(
+    final resolvedIconColor = iconColor ?? AppColors.accent;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: LuxuryCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         onTap: onTap == null ? null : () => onTap!(),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        title: Text(
-          text ?? '',
-          style: OwnTheme.normalTextStyle(lang: lang).copyWith(
-            color: OwnTheme.colorPalette['black'],
-          ),
-        ),
-        leading: icon is IconData
-            ? Icon(
-                icon,
-                color: iconColor ?? OwnTheme.colorPalette['secondary'],
-                size: 19.sp,
-              )
-            : Image.asset(
-                icon.toString(),
-                width: 19.sp,
-                height: 19.sp,
-                color: iconColor ?? OwnTheme.colorPalette['secondary'],
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.accentSoft,
+                borderRadius: BorderRadius.circular(AppRadius.medium),
               ),
-        trailing: Icon(
-          Icons.chevron_right_rounded,
-          color: OwnTheme.colorPalette['gray'],
+              child: icon is IconData
+                  ? Icon(icon, color: resolvedIconColor, size: 22)
+                  : Padding(
+                      padding: const EdgeInsets.all(11),
+                      child: Image.asset(
+                        icon.toString(),
+                        color: resolvedIconColor,
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                text ?? '',
+                style: AppTypography.label,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textMuted,
+            ),
+          ],
         ),
       ),
     );

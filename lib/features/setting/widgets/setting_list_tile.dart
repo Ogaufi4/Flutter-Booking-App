@@ -1,13 +1,12 @@
-import 'package:booking_app/core/utils/extensions/theme_extensions.dart';
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
 
 class SettingListTile extends StatelessWidget {
   final String? text;
   final String? value;
-  final dynamic? icon;
+  final dynamic icon;
   final Color? iconColor;
   final Widget? widget;
   final Function? onTap;
@@ -23,46 +22,54 @@ class SettingListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         onTap != null ? onTap!() : null;
       },
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: space2),
+        constraints: const BoxConstraints(minHeight: 48),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: AppColors.divider),
+          ),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              text ?? '',
-              style: OwnTheme.normalTextStyle(lang: lang)
-                  .colorChange(color: 'white'),
+            Expanded(
+              child: Text(
+                text ?? '',
+                style: AppTypography.bodyLarge,
+              ),
             ),
+            const SizedBox(width: AppSpacing.md),
             widget ??
                 Text(
                   value ?? '',
-                  style: OwnTheme.normalBoldTextStyle(lang: lang)
-                      .colorChange(color: 'white'),
+                  style: AppTypography.label,
                 ),
             if (icon is IconData)
-              Icon(
-                icon,
-                color: iconColor ?? OwnTheme.colorPalette['gray'],
-                size: 20.sp,
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                child: Icon(
+                  icon,
+                  color: iconColor ?? AppColors.textMuted,
+                  size: 22,
+                ),
               ),
             if (icon is String)
-              Image.asset(
-                icon.toString(),
-                width: 20.sp,
-                height: 20.sp,
-                color: iconColor ?? OwnTheme.colorPalette['gray'],
-              )
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
+                child: Image.asset(
+                  icon.toString(),
+                  width: 22,
+                  height: 22,
+                  color: iconColor ?? AppColors.textMuted,
+                ),
+              ),
           ],
         ),
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(
-                    width: 0.5,
-                    color: OwnTheme.colorPalette['gray']!,
-                    style: BorderStyle.solid))),
       ),
     );
   }

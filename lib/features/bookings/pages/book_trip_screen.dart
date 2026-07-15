@@ -1,7 +1,13 @@
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
+import 'package:booking_app/core/widgets/luxury_button.dart';
+import 'package:booking_app/core/widgets/luxury_card.dart';
+import 'package:booking_app/core/widgets/luxury_text_field.dart';
 import 'package:booking_app/data/models/basic_model.dart';
 import 'package:booking_app/features/bookings/data/booking_repository.dart';
-import 'package:booking_app/resources/buttonkey/button.dart';
-import 'package:booking_app/resources/themes/theme.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -66,6 +72,7 @@ class _BookTripScreenState extends State<BookTripScreen> {
     _serviceType = services.containsKey(widget.initialService)
         ? widget.initialService
         : 'custom_trip';
+    _loadReceiptDefaults();
   }
 
   @override
@@ -90,6 +97,17 @@ class _BookTripScreenState extends State<BookTripScreen> {
       firstDate: DateTime(firstDate.year, firstDate.month, firstDate.day),
       lastDate: DateTime.now().add(const Duration(days: 730)),
       initialDate: initialDate.isBefore(firstDate) ? firstDate : initialDate,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: AppColors.primary,
+                  secondary: AppColors.accent,
+                ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked == null) return;
     setState(() {
@@ -113,6 +131,7 @@ class _BookTripScreenState extends State<BookTripScreen> {
 
     setState(() => _submitting = true);
     try {
+      await _saveReceiptDefaults();
       await _repository.createBooking(
         serviceType: _serviceType,
         fullName: _name.text,
@@ -143,14 +162,9 @@ class _BookTripScreenState extends State<BookTripScreen> {
         ),
       );
       if (mounted) Navigator.pop(context, true);
-    } on FirebaseException catch (error) {
+    } catch (_) {
       _showMessage(
-        error.code == 'permission-denied'
-            ? 'Firestore permissions blocked this booking. Update the bookings security rules.'
-            : 'Could not save booking. Please try again.',
-      );
-    } catch (error) {
-      _showMessage(error.toString().replaceFirst('Exception: ', ''));
+          'We could not submit your booking right now. Please try again.');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -161,159 +175,242 @@ class _BookTripScreenState extends State<BookTripScreen> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Future<void> _loadReceiptDefaults() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) return;
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(firebaseUser.uid)
+          .get();
+      final data = snapshot.data();
+      if (data == null || !mounted) return;
+      final savedEmail = data['notificationEmail']?.toString().trim() ?? '';
+      final savedPhone = data['notificationWhatsapp']?.toString().trim() ??
+          data['phone']?.toString().trim() ??
+          '';
+      setState(() {
+        if (savedEmail.isNotEmpty) _email.text = savedEmail;
+        if (savedPhone.isNotEmpty) _phone.text = savedPhone;
+      });
+    } catch (_) {
+      // Receipt defaults are a convenience; booking should still work.
+    }
+  }
+
+  Future<void> _saveReceiptDefaults() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser == null) return;
+    try {
+      final ref =
+          FirebaseFirestore.instance.collection('users').doc(firebaseUser.uid);
+      final snapshot = await ref.get();
+      final payload = <String, Object?>{
+        'notificationEmail': _email.text.trim().toLowerCase(),
+        'notificationWhatsapp': _phone.text.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      if (!snapshot.exists) {
+        payload.addAll({
+          'role': 'customer',
+          'name': _name.text.trim(),
+          'email': _email.text.trim().toLowerCase(),
+        });
+      }
+      await ref.set(payload, SetOptions(merge: true));
+    } catch (_) {
+      // A preferences write must never block a booking receipt.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('dd MMM yyyy');
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+    final horizontal = MediaQuery.of(context).size.width < 360
+        ? AppSpacing.screenSmall
+        : AppSpacing.screen;
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(
-          'Book a Trip',
-          style: TextStyle(
-            color: OwnTheme.colorPalette['secondary'],
-            fontWeight: FontWeight.w700,
-          ),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_rounded),
         ),
+        title: const Text('Book a Trip'),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 36),
-          children: [
-            Text(
-              'Tell us where you want to go',
-              style: TextStyle(
-                color: OwnTheme.colorPalette['secondary'],
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
+      bottomNavigationBar: keyboardOpen
+          ? null
+          : SafeArea(
+              minimum: EdgeInsets.fromLTRB(horizontal, 10, horizontal, 18),
+              child: LuxuryButton(
+                label: 'Continue',
+                isLoading: _submitting,
+                onPressed: _submitting ? null : _submit,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Travel365 will review your booking and contact you with the next steps.',
-              style:
-                  TextStyle(color: OwnTheme.colorPalette['gray'], height: 1.5),
+      body: SafeArea(
+        top: false,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(
+              horizontal,
+              18,
+              horizontal,
+              keyboardOpen ? 28 : 96,
             ),
-            const SizedBox(height: 26),
-            const FormLabel('Service'),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: _serviceType,
-              items: services.entries
-                  .map((entry) => DropdownMenuItem(
-                      value: entry.key, child: Text(entry.value)))
-                  .toList(),
-              onChanged: (value) =>
-                  setState(() => _serviceType = value ?? 'custom_trip'),
-            ),
-            const SizedBox(height: 18),
-            FormLabel('Destination'),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _destination,
-              decoration: const InputDecoration(
-                  hintText: 'e.g. Namibia, Dubai or Paris'),
-              validator: requiredValidator,
-            ),
-            const SizedBox(height: 18),
-            const FormLabel('Departure city'),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _departureCity,
-              decoration: const InputDecoration(hintText: 'e.g. Gaborone'),
-              validator: requiredValidator,
-            ),
-            const SizedBox(height: 18),
-            Row(children: [
-              Expanded(
-                child: DateField(
-                  label: 'Departure',
-                  value: _departureDate == null
-                      ? 'Select date'
-                      : dateFormat.format(_departureDate!),
-                  onTap: () => _pickDate(true),
+            children: [
+              Text('Tell us where\nyou want to go',
+                  style: AppTypography.displayLarge),
+              const SizedBox(height: 12),
+              Text(
+                'Travel365 will review your booking and contact you with the next steps.',
+                style: AppTypography.bodyMedium,
+              ),
+              const SizedBox(height: 28),
+              _FormSection(
+                title: 'Trip details',
+                children: [
+                  _ServiceDropdown(
+                    value: _serviceType,
+                    services: services,
+                    onChanged: (value) =>
+                        setState(() => _serviceType = value ?? 'custom_trip'),
+                  ),
+                  const SizedBox(height: 16),
+                  LuxuryTextField(
+                    controller: _destination,
+                    label: 'Destination',
+                    hintText: 'Cape Town City',
+                    validator: requiredValidator,
+                  ),
+                  const SizedBox(height: 16),
+                  LuxuryTextField(
+                    controller: _departureCity,
+                    label: 'Departure city',
+                    hintText: 'Gaborone',
+                    validator: requiredValidator,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _FormSection(
+                title: 'Dates',
+                children: [
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final narrow = constraints.maxWidth < 330;
+                      final fields = [
+                        Expanded(
+                          child: _DateSelector(
+                            label: 'Departure',
+                            value: _departureDate,
+                            onTap: () => _pickDate(true),
+                          ),
+                        ),
+                        SizedBox(
+                            width: narrow ? 0 : 12, height: narrow ? 12 : 0),
+                        Expanded(
+                          child: _DateSelector(
+                            label: 'Return',
+                            value: _returnDate,
+                            onTap: () => _pickDate(false),
+                          ),
+                        ),
+                      ];
+                      if (narrow) {
+                        return Column(
+                          children: fields
+                              .map(
+                                (child) => child is Expanded
+                                    ? SizedBox(
+                                        width: double.infinity,
+                                        child: child.child)
+                                    : child,
+                              )
+                              .toList(),
+                        );
+                      }
+                      return Row(children: fields);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _FormSection(
+                title: 'Travellers',
+                children: [
+                  TravellerCounter(
+                    label: 'Adults',
+                    helper: 'Age 13 and above',
+                    value: _adults,
+                    onMinus:
+                        _adults > 1 ? () => setState(() => _adults--) : null,
+                    onPlus: () => setState(() => _adults++),
+                  ),
+                  const Divider(height: 26, color: AppColors.divider),
+                  TravellerCounter(
+                    label: 'Children',
+                    helper: 'Age 12 and below',
+                    value: _children,
+                    onMinus: _children > 0
+                        ? () => setState(() => _children--)
+                        : null,
+                    onPlus: () => setState(() => _children++),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _FormSection(
+                title: 'Contact details',
+                children: [
+                  LuxuryTextField(
+                    controller: _name,
+                    label: 'Full name',
+                    validator: requiredValidator,
+                  ),
+                  const SizedBox(height: 16),
+                  LuxuryTextField(
+                    controller: _email,
+                    label: 'Email',
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || !value.contains('@')) {
+                        return 'Enter a valid email.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  LuxuryTextField(
+                    controller: _phone,
+                    label: 'Phone number',
+                    keyboardType: TextInputType.phone,
+                    validator: requiredValidator,
+                  ),
+                  const SizedBox(height: 16),
+                  LuxuryTextField(
+                    controller: _notes,
+                    label: 'Special request',
+                    hintText:
+                        'Airline, hotel, budget or accessibility preferences',
+                    minLines: 3,
+                    maxLines: 5,
+                  ),
+                ],
+              ),
+              if (keyboardOpen) ...[
+                const SizedBox(height: 24),
+                LuxuryButton(
+                  label: 'Continue',
+                  isLoading: _submitting,
+                  onPressed: _submitting ? null : _submit,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: DateField(
-                  label: 'Return',
-                  value: _returnDate == null
-                      ? 'Select date'
-                      : dateFormat.format(_returnDate!),
-                  onTap: () => _pickDate(false),
-                ),
-              ),
-            ]),
-            const SizedBox(height: 22),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: OwnTheme.colorPalette['surfaceAlt'],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: OwnTheme.colorPalette['border']!),
-              ),
-              child: Column(children: [
-                TravellerCounter(
-                  label: 'Adults',
-                  value: _adults,
-                  onMinus: _adults > 1 ? () => setState(() => _adults--) : null,
-                  onPlus: () => setState(() => _adults++),
-                ),
-                Divider(color: OwnTheme.colorPalette['border']),
-                TravellerCounter(
-                  label: 'Children',
-                  value: _children,
-                  onMinus:
-                      _children > 0 ? () => setState(() => _children--) : null,
-                  onPlus: () => setState(() => _children++),
-                ),
-              ]),
-            ),
-            const SizedBox(height: 24),
-            const FormLabel('Contact details'),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _name,
-              decoration: const InputDecoration(labelText: 'Full name'),
-              validator: requiredValidator,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _email,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email'),
-              validator: (value) {
-                if (value == null || !value.contains('@'))
-                  return 'Enter a valid email.';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _phone,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'Phone number'),
-              validator: requiredValidator,
-            ),
-            const SizedBox(height: 18),
-            const FormLabel('Notes (optional)'),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _notes,
-              minLines: 3,
-              maxLines: 5,
-              decoration: const InputDecoration(
-                hintText:
-                    'Airline, hotel, room, budget or accessibility preferences',
-              ),
-            ),
-            const SizedBox(height: 28),
-            ButtonKey(
-              buttonText: 'Book',
-              isLoading: _submitting,
-              function: _submitting ? null : _submit,
-            ),
-          ],
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -325,60 +422,120 @@ String? requiredValidator(String? value) {
   return null;
 }
 
-class FormLabel extends StatelessWidget {
-  const FormLabel(this.text, {Key? key}) : super(key: key);
-  final String text;
+class _FormSection extends StatelessWidget {
+  const _FormSection({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: OwnTheme.colorPalette['black'],
-        fontWeight: FontWeight.w700,
+    return LuxuryCard(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: AppTypography.sectionTitle),
+          const SizedBox(height: 16),
+          ...children,
+        ],
       ),
     );
   }
 }
 
-class DateField extends StatelessWidget {
-  const DateField({
-    Key? key,
-    required this.label,
+class _ServiceDropdown extends StatelessWidget {
+  const _ServiceDropdown({
     required this.value,
-    required this.onTap,
-  }) : super(key: key);
+    required this.services,
+    required this.onChanged,
+  });
 
-  final String label;
   final String value;
-  final VoidCallback onTap;
+  final Map<String, String> services;
+  final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FormLabel(label),
+        Text('Service', style: AppTypography.label),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: value,
+          isExpanded: true,
+          decoration: const InputDecoration(),
+          items: services.entries
+              .map(
+                (entry) => DropdownMenuItem(
+                  value: entry.key,
+                  child: Text(
+                    entry.value,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+}
+
+class _DateSelector extends StatelessWidget {
+  const _DateSelector({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label;
+  final DateTime? value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = value == null
+        ? 'Select date'
+        : DateFormat('dd MMM yyyy').format(value!);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTypography.label),
         const SizedBox(height: 8),
         InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.medium),
           child: Container(
             height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: OwnTheme.colorPalette['bgGray'],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: OwnTheme.colorPalette['border']!),
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.medium),
+              border: Border.all(color: AppColors.border),
             ),
-            child: Row(children: [
-              Icon(Icons.calendar_today_outlined,
-                  size: 18, color: OwnTheme.colorPalette['primary']),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: Text(value,
-                      style: TextStyle(color: OwnTheme.colorPalette['black']))),
-            ]),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today_outlined,
+                    size: 18, color: AppColors.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    text,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.caption.copyWith(
+                      color: value == null
+                          ? AppColors.textMuted
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -390,53 +547,70 @@ class TravellerCounter extends StatelessWidget {
   const TravellerCounter({
     Key? key,
     required this.label,
+    required this.helper,
     required this.value,
     required this.onMinus,
     required this.onPlus,
   }) : super(key: key);
 
   final String label;
+  final String helper;
   final int value;
   final VoidCallback? onMinus;
   final VoidCallback onPlus;
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Expanded(
-        child: Text(
-          label,
-          style: TextStyle(
-              color: OwnTheme.colorPalette['black'],
-              fontWeight: FontWeight.w600),
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: AppTypography.label),
+              const SizedBox(height: 3),
+              Text(helper, style: AppTypography.caption),
+            ],
+          ),
         ),
-      ),
-      CounterButton(icon: Icons.remove, onTap: onMinus),
-      SizedBox(
+        _StepperButton(icon: Icons.remove_rounded, onTap: onMinus),
+        SizedBox(
           width: 42,
-          child: Text('$value',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w700))),
-      CounterButton(icon: Icons.add, onTap: onPlus),
-    ]);
+          child: Text(
+            '$value',
+            textAlign: TextAlign.center,
+            style: AppTypography.label,
+          ),
+        ),
+        _StepperButton(icon: Icons.add_rounded, onTap: onPlus),
+      ],
+    );
   }
 }
 
-class CounterButton extends StatelessWidget {
-  const CounterButton({Key? key, required this.icon, this.onTap})
-      : super(key: key);
+class _StepperButton extends StatelessWidget {
+  const _StepperButton({required this.icon, this.onTap});
   final IconData icon;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onTap,
-      style: IconButton.styleFrom(
-        backgroundColor: Colors.white,
-        side: BorderSide(color: OwnTheme.colorPalette['border']!),
+    return InkWell(
+      customBorder: const CircleBorder(),
+      onTap: onTap,
+      child: Opacity(
+        opacity: onTap == null ? 0.38 : 1,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.primary),
+        ),
       ),
-      icon: Icon(icon, size: 18),
     );
   }
 }

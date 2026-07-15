@@ -1,35 +1,51 @@
-import 'package:booking_app/core/utils/extensions/theme_extensions.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
 import 'package:booking_app/data/models/on_boarding_model.dart';
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 class OnboardingItem extends StatelessWidget {
   final OnBoardingModel row;
 
-  const OnboardingItem({required this.row});
+  const OnboardingItem({Key? key, required this.row}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Lottie.asset(
-            '${row.image}',
-            width: MediaQuery.of(context).size.width * 0.6,
-            height: MediaQuery.of(context).size.width * 0.6,
+          Container(
+            width: double.infinity,
+            height: 278,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Center(
+              child: Lottie.asset(
+                row.image,
+                width: 230,
+                height: 230,
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: space2),
-            child: Text('${row.title}',
-                style: OwnTheme.avBoldTextStyle(lang: lang)
-                    .colorChange(color: 'white')),
+          const SizedBox(height: 34),
+          Text(
+            row.title,
+            textAlign: TextAlign.center,
+            style: AppTypography.displayMedium,
           ),
-          Text('${row.subtitle}',
-              textAlign: TextAlign.center,
-              style: OwnTheme.prNormalTextStyle(lang: lang)
-                  .colorChange(color: 'white')),
+          const SizedBox(height: 12),
+          Text(
+            row.subtitle,
+            textAlign: TextAlign.center,
+            style: AppTypography.bodyMedium,
+          ),
         ],
       ),
     );

@@ -1,319 +1,212 @@
 import 'package:booking_app/core/localization/setup/app_localization.dart';
-import 'package:booking_app/core/utils/extensions/layout_extensions.dart';
-import 'package:booking_app/core/utils/extensions/theme_extensions.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
 import 'package:booking_app/core/utils/local/cash_helper.dart';
-import 'package:booking_app/core/utils/widgets/custom_app_bar.dart';
 import 'package:booking_app/core/utils/widgets/toast.dart';
+import 'package:booking_app/core/widgets/luxury_button.dart';
+import 'package:booking_app/core/widgets/luxury_card.dart';
+import 'package:booking_app/core/widgets/luxury_icon_button.dart';
+import 'package:booking_app/core/widgets/luxury_text_field.dart';
 import 'package:booking_app/data/models/user_model.dart';
-import 'package:booking_app/features/login/bloc/login_cubit.dart';
 import 'package:booking_app/features/register/bloc/register_cubit.dart';
 import 'package:booking_app/features/register/bloc/register_state.dart';
-import 'package:booking_app/resources/buttonkey/button.dart';
-import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class RegisterScreen extends StatelessWidget {
-  var firstNameController = TextEditingController();
-  var lastNameController = TextEditingController();
-  var emailController = TextEditingController();
-  var passwordController = TextEditingController();
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({Key? key}) : super(key: key);
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
-  UserModel user = UserModel();
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(LoginCubit.get(context).isPassword.toString());
     return BlocConsumer<RegisterCubit, RegisterStates>(
       listener: (context, state) {
+        if (state is RegisterErrorState) {
+          customToast(
+            title: state.error.replaceFirst('Exception: ', ''),
+            color: AppColors.error,
+          );
+        }
         if (state is RegisterSuccessState) {
-          print(state.model.apiToken);
           CashHelper.saveData(key: 'token', value: state.model.apiToken);
           CashHelper.saveData(key: 'userId', value: state.model.id);
-          customToast(
-              title: 'Welcome', color: OwnTheme.colorPalette['primary']!);
+          customToast(title: 'Welcome', color: AppColors.primary);
           Navigator.pushNamedAndRemoveUntil(
-              context, '/main', (Route<dynamic> route) => false);
+            context,
+            '/main',
+            (Route<dynamic> route) => false,
+          );
         }
       },
       builder: (context, state) {
+        final cubit = RegisterCubit.get(context);
         return Scaffold(
-          // backgroundColor: Color(0xFFFFFFFF),
-          body: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                  CustomAppBar(
-                    leadingWidget: BackIconAppBar(
-                      lang: lang,
-                    ),
-                  ).safeArea(),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'sign_up_txt'.tr(context),
-                        style: OwnTheme.hugeBoldTextStyle(lang: lang)
-                            .colorChange(color: 'secondary'),
-                      ),
-                      SizedBox(
-                        height: space2,
-                      ),
-                      Text(
-                        'first_name_txt'.tr(context),
-                        style: OwnTheme.normalTextStyle(lang: lang)
-                            .colorChange(color: 'gray'),
-                      ),
-                      SizedBox(
-                        height: space0,
-                      ),
-                      TextFormField(
-                        style: const TextStyle(color: Color(0xFF262833), fontWeight: FontWeight.w500),
-                        controller: firstNameController,
-                        keyboardType: TextInputType.name,
-                        onFieldSubmitted: (String value) {},
-                        onChanged: (String value) {},
-                        validator: (String? value) {
-                          if (value!.isEmpty) {
-                            return 'first_table_txt'.tr(context);
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                            filled: true,
-                            fillColor: OwnTheme.colorPalette['bgGray'],
-                            labelText: 'Box_First_Text'.tr(context),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: OwnTheme.colorPalette['primary']!,
-                                  width: 1,
-                                  style: BorderStyle.solid),
-                              borderRadius: BorderRadius.circular(round),
-                            ),
-                            labelStyle: OwnTheme.normalBoldTextStyle(lang: lang)
-                                .colorChange(color: 'gray')),
-                      ),
-                      SizedBox(
-                        height: space0,
-                      ),
-                      Text(
-                        'last_name_txt'.tr(context),
-                        style: OwnTheme.normalTextStyle(lang: lang)
-                            .colorChange(color: 'gray'),
-                      ),
-                      SizedBox(
-                        height: space0,
-                      ),
-                      TextFormField(
-                        style: const TextStyle(color: Color(0xFF262833), fontWeight: FontWeight.w500),
-                        controller: lastNameController,
-                        keyboardType: TextInputType.text,
-                        onFieldSubmitted: (String value) {},
-                        onChanged: (String value) {},
-                        validator: (String? value) {
-                          if (value!.isEmpty) {
-                            return 'last_table_txt'.tr(context);
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                            filled: true,
-                            fillColor: OwnTheme.colorPalette['bgGray'],
-                            labelText: 'Box_Last_Text'.tr(context),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: OwnTheme.colorPalette['primary']!,
-                                  width: 1,
-                                  style: BorderStyle.solid),
-                              borderRadius: BorderRadius.circular(round),
-                            ),
-                            labelStyle: OwnTheme.normalBoldTextStyle(lang: lang)
-                                .colorChange(color: 'gray')),
-                      ),
-                      SizedBox(
-                        height: space0,
-                      ),
-                      Text(
-                        'email_title_txt'.tr(context),
-                        style: OwnTheme.normalTextStyle(lang: lang)
-                            .colorChange(color: 'gray'),
-                      ),
-                      SizedBox(
-                        height: space0,
-                      ),
-                      TextFormField(
-                        style: const TextStyle(color: Color(0xFF262833), fontWeight: FontWeight.w500),
-                        controller: emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        onFieldSubmitted: (String value) {},
-                        onChanged: (String value) {},
-                        validator: (String? value) {
-                          if (value!.isEmpty) {
-                            return 'email_table'.tr(context);
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          floatingLabelBehavior: FloatingLabelBehavior.never,
-                          filled: true,
-                          fillColor: OwnTheme.colorPalette['bgGray'],
-                          labelText: 'Eg.example@gmail.com',
-                          prefixIcon: Icon(
-                            Icons.email,
-                            color: OwnTheme.colorPalette['gray'],
-                          ),
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: OwnTheme.colorPalette['primary']!,
-                                width: 1,
-                                style: BorderStyle.solid),
-                            borderRadius: BorderRadius.circular(round),
-                          ),
-                          labelStyle: OwnTheme.normalBoldTextStyle(lang: lang)
-                              .colorChange(color: 'gray'),
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        LuxuryIconButton(
+                          icon: Icons.arrow_back_rounded,
+                          semanticLabel: 'Back',
+                          onPressed: () {
+                            if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                          },
                         ),
-                      ),
-                      SizedBox(
-                        height: space0,
-                      ),
-                      Text(
-                        'password_txt'.tr(context),
-                        style: OwnTheme.normalTextStyle(lang: lang)
-                            .colorChange(color: 'gray'),
-                      ),
-                      SizedBox(
-                        height: space0,
-                      ),
-                      TextFormField(
-                        textAlignVertical: TextAlignVertical.center,
-                        style: const TextStyle(color: Color(0xFF262833), fontWeight: FontWeight.w500),
-                        controller: passwordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        obscureText: RegisterCubit.get(context).isPassword,
-                        onFieldSubmitted: (String value) {},
-                        onChanged: (String value) {},
-                        validator: (String? value) {
-                          if (value!.isEmpty) {
-                            return 'password_table'.tr(context);
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                            filled: true,
-                            fillColor: OwnTheme.colorPalette['bgGray'],
-                            labelText: 'Box_Password_Text'.tr(context),
-                            prefixIcon: Icon(
-                              Icons.lock,
-                              color: OwnTheme.colorPalette['gray'],
-                            ),
-                            suffixIcon: GestureDetector(
-                              onTap: () {
-                                RegisterCubit.get(context).ChangePassword();
-                              },
-                              child: Icon(
-                                RegisterCubit.get(context).suffix,
-                                color: OwnTheme.colorPalette['gray'],
+                        const Spacer(),
+                        SvgPicture.asset(
+                          'assets/images/travel365_logo.svg',
+                          width: 112,
+                          semanticsLabel: 'Travel365 logo',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 34),
+                    Text(
+                      'sign_up_txt'.tr(context),
+                      style: AppTypography.displayMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Create a Travel365 profile for bookings, receipts and trip updates.',
+                      style: AppTypography.bodyMedium,
+                    ),
+                    const SizedBox(height: 28),
+                    LuxuryCard(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          LuxuryTextField(
+                            controller: firstNameController,
+                            label: 'first_name_txt'.tr(context),
+                            hintText: 'Box_First_Text'.tr(context),
+                            keyboardType: TextInputType.name,
+                            prefixIcon: Icons.person_outline_rounded,
+                            textInputAction: TextInputAction.next,
+                            validator: (value) =>
+                                value == null || value.trim().isEmpty
+                                    ? 'first_table_txt'.tr(context)
+                                    : null,
+                          ),
+                          const SizedBox(height: 16),
+                          LuxuryTextField(
+                            controller: lastNameController,
+                            label: 'last_name_txt'.tr(context),
+                            hintText: 'Box_Last_Text'.tr(context),
+                            keyboardType: TextInputType.name,
+                            prefixIcon: Icons.person_outline_rounded,
+                            textInputAction: TextInputAction.next,
+                            validator: (value) =>
+                                value == null || value.trim().isEmpty
+                                    ? 'last_table_txt'.tr(context)
+                                    : null,
+                          ),
+                          const SizedBox(height: 16),
+                          LuxuryTextField(
+                            controller: emailController,
+                            label: 'email_title_txt'.tr(context),
+                            hintText: 'Eg.example@gmail.com',
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Icons.email_outlined,
+                            textInputAction: TextInputAction.next,
+                            validator: (value) =>
+                                value == null || value.trim().isEmpty
+                                    ? 'email_table'.tr(context)
+                                    : null,
+                          ),
+                          const SizedBox(height: 16),
+                          LuxuryTextField(
+                            controller: passwordController,
+                            label: 'password_txt'.tr(context),
+                            hintText: 'Box_Password_Text'.tr(context),
+                            keyboardType: TextInputType.visiblePassword,
+                            obscureText: cubit.isPassword,
+                            prefixIcon: Icons.lock_outline_rounded,
+                            suffixIcon: IconButton(
+                              onPressed: cubit.ChangePassword,
+                              icon: Icon(
+                                cubit.suffix,
+                                color: AppColors.textSecondary,
                               ),
                             ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: OwnTheme.colorPalette['primary']!,
-                                  width: 1,
-                                  style: BorderStyle.solid),
-                              borderRadius: BorderRadius.circular(round),
-                            ),
-                            labelStyle: OwnTheme.normalBoldTextStyle(lang: lang)
-                                .colorChange(color: 'gray')),
-                      ),
-                      SizedBox(
-                        height: 30,
-                      ),
-                      ButtonKey(
-                        function: () {
-                          if (formKey.currentState!.validate()) {
-                            FocusScope.of(context)
-                                .requestFocus(new FocusNode());
-                            user = UserModel(
-                                name: firstNameController.text +
-                                    ' ' +
-                                    lastNameController.text,
-                                email: emailController.text,
-                                password: passwordController.text,
-                                passwordConfirmation: passwordController.text);
-
-                            debugPrint('UserData==${user.name}');
-                            debugPrint('UserData==${user.email}');
-                            debugPrint('UserData==${user.password}');
-                            debugPrint(
-                                'UserData==${user.passwordConfirmation}');
-
-                            RegisterCubit.get(context).register(obj: user);
-                          }
-                        },
-                        buttonText: 'Button_Register'.tr(context),
-                        textColor: OwnTheme.colorPalette['secondary'],
-                        isLoading: (state is RegisterLoadingState),
-                      ),
-                      SizedBox(
-                        height: 15,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'register_title1_txt'.tr(context),
-                            style: OwnTheme.normalTextStyle(lang: lang)
-                                .colorChange(color: 'gray'),
-                            textAlign: TextAlign.center,
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'password_table'.tr(context)
+                                : null,
                           ),
                         ],
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                    const SizedBox(height: 24),
+                    LuxuryButton(
+                      label: 'Button_Register'.tr(context),
+                      icon: Icons.person_add_alt_1_rounded,
+                      isLoading: state is RegisterLoadingState,
+                      onPressed: () {
+                        if (!formKey.currentState!.validate()) return;
+                        FocusScope.of(context).unfocus();
+                        final firstName = firstNameController.text.trim();
+                        final lastName = lastNameController.text.trim();
+                        final user = UserModel(
+                          name: '$firstName $lastName',
+                          email: emailController.text.trim(),
+                          password: passwordController.text,
+                          passwordConfirmation: passwordController.text,
+                        );
+                        cubit.register(obj: user);
+                      },
+                    ),
+                    const SizedBox(height: 22),
+                    Center(
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        alignment: WrapAlignment.center,
                         children: [
                           Text(
                             'first_text'.tr(context),
-                            textAlign: TextAlign.center,
-                            style: OwnTheme.prNormalTextStyle(lang: lang)
-                                .colorChange(color: 'gray'),
+                            style: AppTypography.bodyMedium,
                           ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/login');
-                            },
+                          GestureDetector(
+                            onTap: () => Navigator.pushNamed(context, '/login'),
                             child: Text(
                               'last_text'.tr(context),
-                              style: OwnTheme.prNormalTextStyle(lang: lang)
-                                  .colorChange(color: 'gray'),
+                              style: AppTypography.button.copyWith(
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ).wholePadding(),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:booking_app/core/utils/extensions/layout_extensions.dart';
-import 'package:booking_app/core/utils/extensions/theme_extensions.dart';
 import 'package:booking_app/core/utils/network/remote/dio_helper.dart';
 import 'package:booking_app/core/utils/network/remote/end_points.dart';
 import 'package:booking_app/data/database/user_helper.dart';
@@ -10,9 +9,11 @@ import 'package:booking_app/core/main_blocs/blocs.dart';
 import 'package:booking_app/core/utils/widgets/custom_app_bar.dart';
 import 'package:booking_app/data/models/basic_model.dart';
 import 'package:booking_app/data/models/user_model.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
 import 'package:booking_app/resources/buttonkey/button.dart';
 import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sizer/sizer.dart';
@@ -86,7 +87,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   Widget build(BuildContext context) {
     // debugPrint('img===${widget.user.image}');
     return Scaffold(
-        backgroundColor: OwnTheme.colorPalette['black'],
+        backgroundColor: AppColors.background,
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -131,9 +132,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                   ),
                                 )
                               : Container(
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: OwnTheme.colorPalette['gray']),
+                                      color: AppColors.accentSoft),
                                   child: Padding(
                                     padding: const EdgeInsets.all(space1),
                                     child: Image.asset(
@@ -149,8 +150,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                               backgroundColor: Colors.white,
                               child: IconButton(
                                 onPressed: () {},
-                                icon: Icon(Icons.image),
-                                color: OwnTheme.colorPalette['black'],
+                                icon: const Icon(Icons.image),
+                                color: AppColors.primary,
                               ),
                             ),
                           ),
@@ -182,8 +183,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius:
-                BorderRadius.vertical(top: Radius.circular(2 * round))),
-        backgroundColor: OwnTheme.colorPalette['bgGray'],
+                BorderRadius.vertical(top: Radius.circular(AppRadius.sheet))),
+        backgroundColor: AppColors.surface,
         isScrollControlled: true,
         elevation: 5,
         context: ctx,
@@ -199,7 +200,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                         width: 50,
                         height: 8,
                         decoration: BoxDecoration(
-                            color: OwnTheme.colorPalette['primary'],
+                            color: AppColors.border,
                             borderRadius: BorderRadius.circular(5)),
                       )
                     ],
@@ -211,8 +212,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text('choose_img_desc'.tr(ctx),
-                          style: OwnTheme.suitableBoldTextStyle(lang: lang)
-                              .colorChange(color: 'white')),
+                          style: AppTypography.headingMedium),
                     ],
                   ),
                   SizedBox(
@@ -232,14 +232,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('camera_txt'.tr(ctx),
-                                  style:
-                                      OwnTheme.normalBoldTextStyle(lang: lang)
-                                          .colorChange(color: 'white')),
+                                  style: AppTypography.bodyLarge),
                               Image.asset(
                                 'assets/icons/camera_icon.webp',
                                 width: 15.sp,
                                 height: 15.sp,
-                                color: OwnTheme.colorPalette['white'],
+                                color: AppColors.textSecondary,
                               ),
                             ],
                           ),
@@ -257,14 +255,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('gallery_txt'.tr(ctx),
-                                  style:
-                                      OwnTheme.normalBoldTextStyle(lang: lang)
-                                          .colorChange(color: 'white')),
+                                  style: AppTypography.bodyLarge),
                               Image.asset(
                                 'assets/icons/gallery_icon.webp',
                                 width: 15.sp,
                                 height: 15.sp,
-                                color: OwnTheme.colorPalette['white'],
+                                color: AppColors.textSecondary,
                               ),
                             ],
                           ),

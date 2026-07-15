@@ -7,7 +7,8 @@
     "build": "tsc",
     "serve": "npm run build && firebase emulators:start --only functions,firestore",
     "deploy": "firebase deploy --only functions",
-    "set-owner": "node scripts/set-owner.mjs"
+    "set-owner": "node scripts/set-owner.mjs",
+    "set-company-contact": "node scripts/set-company-contact.mjs"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",

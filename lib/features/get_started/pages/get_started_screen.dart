@@ -1,6 +1,6 @@
 import 'package:booking_app/features/get_started/widgets/app_basic_info.dart';
 import 'package:booking_app/features/get_started/widgets/bottom_controller.dart';
-import 'package:booking_app/resources/themes/theme.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class GetStartedScreen extends StatelessWidget {
@@ -8,9 +8,9 @@ class GetStartedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: OwnTheme.colorPalette['bg'],
-      body: const SafeArea(
+    return const Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.fromLTRB(24, 24, 24, 20),
           child: Column(

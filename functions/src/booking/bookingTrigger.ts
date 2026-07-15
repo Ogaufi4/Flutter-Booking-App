@@ -1,13 +1,13 @@
 import {FieldValue} from "firebase-admin/firestore";
 import {onDocumentCreated, onDocumentUpdated} from "firebase-functions/v2/firestore";
-import {metaAccessToken} from "../config";
+import {wasenderApiToken} from "../config";
 import {notifyBookingCreated, notifyBookingStatusChanged} from "../notifications/notificationService";
 import {claimEvent} from "../utils/logger";
 import {normalized} from "../types";
 import type {Booking} from "../types";
 
 export const onBookingCreated = onDocumentCreated(
-  {document: "bookings/{bookingId}", secrets: [metaAccessToken]},
+  {document: "bookings/{bookingId}", secrets: [wasenderApiToken]},
   async (event) => {
     const bookingId = event.params.bookingId;
     const booking = event.data?.data() as Booking | undefined;
@@ -26,7 +26,7 @@ export const onBookingCreated = onDocumentCreated(
 );
 
 export const onBookingUpdated = onDocumentUpdated(
-  {document: "bookings/{bookingId}", secrets: [metaAccessToken]},
+  {document: "bookings/{bookingId}", secrets: [wasenderApiToken]},
   async (event) => {
     const before = event.data?.before.data() as Booking | undefined;
     const after = event.data?.after.data() as Booking | undefined;

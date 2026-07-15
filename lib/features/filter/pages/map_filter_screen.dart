@@ -2,14 +2,15 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:booking_app/core/localization/setup/app_localization.dart';
-import 'package:booking_app/core/utils/extensions/theme_extensions.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_radius.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
 import 'package:booking_app/core/utils/images_services/image_services.dart';
 import 'package:booking_app/core/utils/network/remote/dio_helper.dart';
 import 'package:booking_app/core/utils/widgets/TextBoxNormal.dart';
-import 'package:booking_app/core/utils/widgets/custom_app_bar.dart';
+import 'package:booking_app/core/widgets/luxury_icon_button.dart';
 import 'package:booking_app/data/models/hotel_model.dart';
 import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -307,16 +308,11 @@ class _MapFilterScreen extends State<MapFilterScreen> {
                           right: side),
                       child: Row(
                         children: [
-                          Container(
-                              height: height1,
-                              width: height1,
-                              padding: EdgeInsets.all(space0),
-                              decoration: BoxDecoration(
-                                  color: OwnTheme.colorPalette['gray'],
-                                  borderRadius: BorderRadius.circular(round)),
-                              child: BackIconAppBar(
-                                lang: lang,
-                              )),
+                          LuxuryIconButton(
+                            icon: Icons.arrow_back_ios_new_rounded,
+                            semanticLabel: 'Back',
+                            onPressed: () => Navigator.of(context).maybePop(),
+                          ),
                           SizedBox(
                             width: space1,
                           ),
@@ -412,8 +408,9 @@ class _MapFilterScreen extends State<MapFilterScreen> {
           width: blockSize,
           height: height6,
           decoration: BoxDecoration(
-              color: OwnTheme.colorPalette['black'],
-              borderRadius: BorderRadius.circular(round)),
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              border: Border.all(color: AppColors.border)),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -465,18 +462,18 @@ class _MapFilterScreen extends State<MapFilterScreen> {
                   children: [
                     Text(
                       e.name ?? '',
-                      style: OwnTheme.normalBoldTextStyle(lang: lang)
-                          .colorChange(color: 'white'),
+                      style: AppTypography.sectionTitle,
                       maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(
                       height: space0,
                     ),
                     Text(
                       '${e.address}',
-                      style: OwnTheme.smallTextStyle(lang: lang)
-                          .colorChange(color: 'white'),
+                      style: AppTypography.caption,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Spacer(),
                     Row(
@@ -488,12 +485,12 @@ class _MapFilterScreen extends State<MapFilterScreen> {
                               children: [
                                 Icon(
                                   Icons.location_pin,
-                                  color: OwnTheme.colorPalette['primary'],
+                                  size: 16,
+                                  color: AppColors.accent,
                                 ),
                                 Text(
                                   '${(dist / 10).ceil()} km to city',
-                                  style: OwnTheme.smallTextStyle(lang: lang)
-                                      .colorChange(color: 'white'),
+                                  style: AppTypography.caption,
                                 ),
                               ],
                             ),
@@ -509,7 +506,7 @@ class _MapFilterScreen extends State<MapFilterScreen> {
                               itemCount: 5,
                               itemBuilder: (context, _) => Icon(
                                 Icons.star,
-                                color: OwnTheme.colorPalette['primary'],
+                                color: AppColors.accent,
                               ),
                               updateOnDrag: false,
                               onRatingUpdate: (rating) {
@@ -523,14 +520,13 @@ class _MapFilterScreen extends State<MapFilterScreen> {
                           children: [
                             Text(
                               '\$${e.price}',
-                              style: OwnTheme.avBoldTextStyle(lang: lang)
-                                  .colorChange(color: 'white'),
+                              style: AppTypography.sectionTitle
+                                  .copyWith(color: AppColors.accent),
                               maxLines: 1,
                             ),
                             Text(
                               'per_night_txt'.tr(context),
-                              style: OwnTheme.smallTextStyle(lang: lang)
-                                  .colorChange(color: 'white'),
+                              style: AppTypography.caption,
                               maxLines: 1,
                             ),
                           ],
@@ -577,7 +573,7 @@ class _MapFilterScreen extends State<MapFilterScreen> {
     //   color = OwnTheme.colorPalette['last']!;
     // }
 
-    Color color = OwnTheme.colorPalette['primary']!;
+    Color color = AppColors.accent;
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
 

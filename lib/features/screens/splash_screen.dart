@@ -1,9 +1,11 @@
 import 'package:booking_app/core/localization/setup/app_localization.dart';
+import 'package:booking_app/core/theme/app_colors.dart';
+import 'package:booking_app/core/theme/app_spacing.dart';
+import 'package:booking_app/core/theme/app_typography.dart';
 import 'package:booking_app/data/database/facility_helper.dart';
 import 'package:booking_app/data/models/basic_model.dart';
 import 'package:booking_app/resources/assets_manager/assets_manager.dart';
 import 'package:booking_app/resources/constants/constants.dart';
-import 'package:booking_app/resources/themes/theme.dart';
 import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     getStarted();
-    new Future.delayed(const Duration(seconds: 4), () {
+    Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
         if (lang == '')
           Navigator.pushNamedAndRemoveUntil(
@@ -43,28 +45,33 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: OwnTheme.colorPalette['white'],
-      body: Container(
-        decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage('assets/images/gradient_bg.webp'),
-                fit: BoxFit.cover)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Lottie.asset(AssetsManager.splashScreenImage,
-                height: size.height * .35, width: size.width),
-            SizedBox(
-              height: space2,
-            ),
-            Text(
-              'booking_app_txt'.tr(context),
-              style: OwnTheme.suitableBoldTextStyle(lang: lang),
-            )
-          ],
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Center(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final logoSize = constraints.maxWidth * 0.6;
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Lottie.asset(
+                    AssetsManager.splashScreenImage,
+                    height: logoSize,
+                    width: logoSize,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  Text(
+                    'booking_app_txt'.tr(context),
+                    textAlign: TextAlign.center,
+                    style: AppTypography.headingMedium,
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

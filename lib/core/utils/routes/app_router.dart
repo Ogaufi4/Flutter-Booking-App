@@ -8,6 +8,7 @@ import 'package:booking_app/features/get_started/pages/get_started_screen.dart';
 import 'package:booking_app/features/auth/pages/phone_otp_screen.dart';
 import 'package:booking_app/features/language/pages/lang_screen.dart';
 import 'package:booking_app/features/login/login_screen.dart';
+import 'package:booking_app/features/notifications/pages/notification_preferences_screen.dart';
 import 'package:booking_app/features/onboarding/pages/onboarding_screen.dart';
 import 'package:booking_app/features/profile/pages/profile_details_screen.dart';
 import 'package:booking_app/features/register/register_screen.dart';
@@ -88,6 +89,14 @@ class AppRouter {
       case '/setting':
         return PageTransition(
           child: SettingScreen(),
+          type: PageTransitionType.rightToLeft,
+          duration: animationDuration,
+          settings: settings,
+        );
+
+      case '/notifications':
+        return PageTransition(
+          child: const NotificationPreferencesScreen(),
           type: PageTransitionType.rightToLeft,
           duration: animationDuration,
           settings: settings,
